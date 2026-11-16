@@ -12,6 +12,8 @@ A transparent, quantitative and editable model of US restrictions on AI chips, h
 
 **Interactive site:** https://forkhead-box-protein-p2.github.io/ai-export-controls-model/
 
+The site leads with a **lean model**: fifteen outcome-level numbers covering the lead controls buy, when transformative AI arrives, what a lead is worth, and what controls cost each year. Each number has a slider, and the site shows the decomposition and break-even values. The full 190-parameter engine ([`engine.html`](engine.html)) is the derivation layer behind it. `ai-controls lean` runs the engine for each worldview and reduces it to the fifteen numbers. It then checks the lean formula against the engine's own policy comparisons and writes `web/lean_params.js` and `lean_validation.csv`. The value of a month of lead and the risk cut per month are calibrated on Maintain vs Relax chips only. On the other comparisons the lean formula has a median error of about 17% and gets the sign right about 96% of the time.
+
 The question is not only whether controls delay China. It is whether the expected strategic benefit of the US lead they induce exceeds the direct and dynamic costs of keeping it, across plausible AI futures. The model does not declare a winner. Its job is to show which beliefs, causal mechanisms and value judgments make a policy look best, and which of them have evidence behind them.
 
 > Most parameters are illustrative test inputs, not measured estimates. Every one carries a status (`observed`, `estimated`, `elicited`, `illustrative`), a range and a source. Results are conditional statements about the model, not forecasts.
@@ -47,7 +49,8 @@ Other commands:
 | `ai-controls sensitivity --config configs/agnostic_wide.yaml --runs 8000` | First-order global sensitivity and the expected value of perfect information for each parameter, plus the top interaction |
 | `ai-controls stress` | Extreme but coherent counterfactuals, including both-positive and both-negative responses |
 | `ai-controls game --config ... --weights us_interest` | Coarse game of US policies against Chinese stances, with deviation gains |
-| `ai-controls export-web` | Regenerate `web/params.js` for the site from the YAML configs |
+| `ai-controls export-web` | Regenerate `web/params.js` for the engine page from the YAML configs |
+| `ai-controls lean` | Derive the lean model's defaults from the engine, validate the lean formula, write `web/lean_params.js` |
 
 ## Changing assumptions
 
@@ -83,7 +86,8 @@ See [`docs/model_spec.md`](docs/model_spec.md) for the equations. [`docs/assumpt
 ## Repository layout
 
 ```text
-index.html, web/           the interactive site (GitHub Pages serves the repository root)
+index.html                 lean front page (web/lean.js, web/lean_app.js, web/lean_params.js)
+engine.html, web/          full engine explorer; GitHub Pages serves the repository root
   web/model.js             browser port of the simulator
   web/params.js            generated from configs/*.yaml
   web/app.js, style.css    the interface

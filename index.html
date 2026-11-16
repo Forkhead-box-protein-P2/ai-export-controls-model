@@ -3,192 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="An interactive stochastic game model of US export controls on AI chips, HBM and chipmaking equipment to China: China's responses, compute, AI transition, conflict risk and payoffs.">
+<meta name="description" content="A lean, 15-number model of whether US AI export controls pay: the lead they buy, when transformative AI arrives, what a lead is worth, and what controls cost.">
 <meta name="theme-color" content="#fafaf8">
-<title>AI Export Controls Game</title>
-<link rel="stylesheet" href="web/style.css?v=3">
-<script>
-window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
-</script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<title>Do Export Controls Pay?</title>
+<link rel="stylesheet" href="web/style.css?v=4">
 </head>
 <body>
 <header class="top"><div class="wrap top-inner">
   <div class="brand">Decision models</div>
-  <nav aria-label="Sections">
-    <a href="#game">The game</a><a href="#outcomes">Outcomes</a><a href="#results">Policy values</a><a href="#paths">Paths</a><a href="#conflict">Risk channels</a><a href="#breakeven">Break-even</a><a href="#sensitivity">Sensitivity</a><a href="#strategic">Strategic game</a><a href="#assumptions">Assumptions</a><a href="#model">Model</a>
-  </nav>
+  <nav aria-label="Sections"><a href="#model">The model</a><a href="#breakeven">Break-even</a><a href="#lost">What it leaves out</a><a href="#numbers">Where the numbers come from</a><a href="engine.html">Full engine</a></nav>
   <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
 </div></header>
 
 <main>
 <div class="wrap">
 <section class="hero">
-  <div class="eyebrow">Stochastic dynamic game · 2026–2050</div>
-  <h1>Do AI export controls pay? A strategic model of the whole game</h1>
-  <p class="lead">Chip controls clearly slow China's access to compute in the near term. The harder question is whether the strategic value of the US lead they produce outweighs the direct and dynamic costs of keeping it, across the AI futures we might be in. This model plays the game out year by year. The US sets controls on chips, high-bandwidth memory (HBM), chipmaking equipment (SME) and cloud access. China responds. Industry, compute and capability evolve. A transformative transition may or may not arrive, and it may or may not be decisive. War and AI catastrophe run as hazards throughout. Every policy is evaluated on the same simulated worlds.</p>
-  <p class="notice">Most parameters are illustrative test inputs, not measured estimates. Each is labelled in <a href="#assumptions">Assumptions</a> as observed, estimated, elicited or illustrative, with its source. Read results as conditional statements: <em>if</em> the world works like this, <em>then</em> this policy does better. The point is to show which beliefs flip the answer.</p>
+  <div class="eyebrow">Lean outcome model · 15 numbers</div>
+  <h1>Do AI export controls pay?</h1>
+  <p class="lead">Controls on chips, high-bandwidth memory and chipmaking equipment buy the US some extra months of AI capability lead, and the extra lead fades. It is worth something only if transformative AI arrives while the lead still exists, and only to the extent a lead is decisive or makes development safer. Controls also cost lost output, weaker open-model competition and a change in war risk every year they are in force. This page puts all of that into fifteen numbers you can move.</p>
+  <p class="notice">Every default comes from a 190-parameter <a href="engine.html">engine</a> run under one of four worldviews, and <a href="#numbers">each is traced</a> to the mechanism that produces it. Most engine inputs are illustrative rather than measured, so read results as <em>if these numbers, then this answer</em>. The useful output is which numbers flip the answer.</p>
 </section>
 
 <section class="block" id="motivation">
-  <div class="sec-head"><div><h2>The disagreement being modelled</h2></div></div>
+  <div class="sec-head"><div><h2>The disagreement</h2></div></div>
   <div class="prose">
-    <p>The model grew out of a public exchange about chip controls. One side, fox, holds that "AGI" need not be strategically decisive. Technology could keep improving and diffusing for decades, with no lasting winner. On that view, controls may give China a captive market that speeds its domestic learning. They may also weaken the Chinese open-weight models that compete with closed US providers, and make Taiwan a more important prize. The other side, Erich Grunewald, holds that transformative AI is likely to be very consequential and fairly likely to be decisive. A large US lead buys time to make systems safe. His stated forecast is that the current controls will keep a US compute advantage of roughly <strong>10× or more over the next decade and 2× or more through the 2040s</strong>, and that the advantage would be much smaller if chip, HBM and SME controls were eased.</p>
-    <p>A real mechanism is not yet an equilibrium. The two worldview presets below put these positions into numbers. They are illustrative operationalisations, not anyone's elicited priors. Only the compute-lead figures above are stated forecasts, and in this model they are <em>outputs</em> of the industrial module, never imposed.</p>
+    <p>One side, fox, holds that "AGI" need not be strategically decisive: improvement and diffusion may continue for decades with no lasting winner. On that view, controls cost open-model competition and trade, give China a captive market to learn on, and may raise conflict risk. The other side, Erich Grunewald, holds that transformative AI is fairly likely to be decisive and that a large US lead buys time to make it safe. His stated forecast is that controls keep a US compute advantage of roughly 10× or more for a decade and 2× or more through the 2040s. The worldview presets below put these positions into numbers. They are illustrative operationalisations, not anyone's elicited priors.</p>
   </div>
 </section>
 </div>
 
-<div class="controls" id="controls"><div class="wrap">
+<div class="controls"><div class="wrap">
   <div class="ctl"><span class="lab">Worldview</span><div class="seg" id="cfgSeg" role="group" aria-label="Worldview"></div></div>
-  <div class="ctl"><span class="lab">Values</span><div class="seg" id="wSeg" role="group" aria-label="Normative weights"></div></div>
-  <div class="ctl"><label for="polA"><span class="sw a"></span>Policy A</label><select id="polA"></select></div>
-  <div class="ctl"><label for="polB"><span class="sw b"></span>Policy B</label><select id="polB"></select></div>
-  <div class="ctl"><label for="nSel">Worlds</label><select id="nSel"><option>250</option><option selected>500</option><option>1000</option><option>2000</option></select></div>
-  <div class="ctl"><button class="btn" id="resetAll" type="button">Reset edits</button></div>
+  <div class="ctl"><span class="lab">Values</span><div class="seg" id="wSeg" role="group" aria-label="Whose dollars count"></div></div>
+  <div class="ctl"><label for="pairSel">Compare</label><select id="pairSel"></select></div>
+  <div class="ctl"><button class="btn" id="resetBtn" type="button">Reset to derived</button></div>
   <span id="status" aria-live="polite"></span>
 </div></div>
 
 <div class="wrap">
-<section class="block" id="game">
-  <div class="sec-head"><div><h2>The game, year by year</h2><p>Each card is one stage of the annual loop, showing Policy A against Policy B on the same simulated worlds. Drag the year or press play to watch the state flow through the loop. Click a card to see its mechanism and change the assumptions behind it.</p></div></div>
-  <p class="reading" id="reading"></p>
-  <div class="scrub"><button class="btn" id="play" type="button" aria-label="Play years">▶ Play</button><span class="yr" id="yearLabel">2035</span><input type="range" id="year" min="2026" max="2050" step="1" value="2035" aria-label="Year"><span class="small muted" id="yearNote">Stages 1–4 show the state in the chosen year; stages 5–7 and hazards are cumulative to that year; outcomes and payoffs cover the whole horizon.</span></div>
-  <div class="map" id="map"><svg class="wires" id="wires" aria-hidden="true"></svg></div>
-  <div class="inspector" id="inspector"></div>
-</section>
-
-<section class="block" id="outcomes">
-  <div class="sec-head"><div><h2>Where the worlds end up</h2><p>Every simulated world, split by what happens by 2050. Box heights are probabilities. Hover a box for the chance of war and of catastrophe in those worlds. War and catastrophe overlap these branches; they are not separate endings.</p></div></div>
-  <div class="trees" id="trees"></div>
-</section>
-
-<section class="block" id="results">
-  <div class="sec-head"><div><h2>Policy values</h2><p>Expected present value of each policy minus <strong id="refName">Maintain</strong>, in trillions of 2026 dollars, broken down by mechanism. The dot is the net value. Differences are taken world by world on the same draws before averaging.</p></div></div>
-  <div class="legend" id="groupLegend"></div>
-  <svg class="chart" id="score" role="img" aria-label="Policy value decomposition"></svg>
-  <div class="table-wrap"><table id="scoreTable"></table></div>
-  <p class="small muted" style="margin-top:8px">Your policy (set it in stage 1 of the game) appears as its own row. Robust choices are the ones that do well under all three value sets and across worldviews, not only at one optimum.</p>
-</section>
-
-<section class="block" id="paths">
-  <div class="sec-head"><div><h2>Paths: compute, capability and the three kinds of indigenisation</h2><p>Medians with 10–90% bands across simulated worlds. Domestic <em>adoption</em>, domestic <em>know-how</em> and domestic <em>output</em> are tracked separately, because controls can raise one while lowering another. The dashed guide on the first chart is the stated compute-lead forecast, so you can see whether a worldview's Maintain path reproduces it.</p></div></div>
-  <div class="legend" id="pathLegend"></div>
-  <div class="paths" id="pathGrid"></div>
-</section>
-
-<section class="block" id="conflict">
-  <div class="sec-head"><div><h2>Risk channels: war and catastrophe</h2><p>China's political claim on Taiwan belongs in the <em>baseline</em> war hazard, which is calibrated to a stated cumulative probability under Maintain. Controls change it only at the margin, through channels of opposite sign. Below are the marginal effects of Policy A relative to Policy B on the cumulative probability of a first great-power war and of an AI catastrophe.</p></div></div>
-  <div class="two">
-    <div class="card"><div class="row" style="justify-content:space-between"><h3>Marginal war risk, A minus B</h3><div class="seg" id="warYearSeg"></div></div><svg class="chart" id="warChart" role="img" aria-label="War risk decomposition"></svg></div>
-    <div class="card"><h3>Reading the channels</h3><div class="kv" id="warKv" style="margin:8px 0 12px"></div>
-      <p class="d"><b>Provocation:</b> controls raise tension, and tension raises the hazard. <b>Strategic denial:</b> if Beijing believes AI is decisive and the US depends on Taiwanese fabs, cutting China off from those chips gives it a reason to deny them to the US. <b>Deterrence:</b> a US capability lead raises China's expected costs. <b>Interdependence:</b> trade ties make confrontation costlier. Signalling enters through China's belief, which moves with how hard the US works to protect its lead.</p></div>
-  </div>
-  <div class="two" style="margin-top:22px">
-    <div class="card"><h3>Marginal catastrophe risk, A minus B</h3><svg class="chart" id="catChart" role="img" aria-label="Catastrophe risk decomposition"></svg></div>
-    <div class="card"><h3>Reading the safety channels</h3><div class="kv" id="catKv" style="margin:8px 0 12px"></div>
-      <p class="d">The hazard is summed over the US and Chinese frontier developers. Each channel is switched off one at a time on the same simulated paths. <b>Chinese developer:</b> the extra risk from the nationality multiplier on Chinese development. <b>Lead slack:</b> the safety a lead buys, counted only to the extent it is spent on safety. <b>Race:</b> extra risk from a close race under tension. <b>Openness:</b> the open-model effect, if any. <b>Exposure:</b> everything else, mainly how close each developer gets to the threshold (controls keep Chinese labs further from it), plus interactions.</p></div>
+<section class="block" id="model">
+  <div class="sec-head"><div><h2>The model</h2><p>Advantage of controls = P(transformative AI arrives while the extra lead exists) × extra lead × value of a month of lead, minus the yearly cost of controls over the years they are in force, plus or minus a war term. The chain below updates as you move the sliders.</p></div></div>
+  <div class="chain" id="chain"></div>
+  <div class="lean-grid">
+    <div>
+      <div class="small muted">Net advantage of controls, present value</div>
+      <div class="bignum" id="net"></div>
+      <p class="reading" id="reading" style="margin-top:8px"></p>
+      <svg class="chart" id="terms" role="img" aria-label="Decomposition of the net advantage"></svg>
+      <h3 style="margin:18px 0 2px">Extra US lead over time</h3>
+      <p class="small muted">Months of extra capability lead that controls buy (lean model), with the engine's own path at the derived settings for comparison.</p>
+      <svg class="chart" id="leadChart" role="img" aria-label="Extra lead over time"></svg>
+      <h3 style="margin:12px 0 2px">When transformative AI arrives</h3>
+      <p class="small muted">Probability of arrival in each year, from the two timing numbers.</p>
+      <svg class="chart" id="arrChart" role="img" aria-label="Arrival probability by year"></svg>
+    </div>
+    <div id="sliders"></div>
   </div>
 </section>
 
 <section class="block" id="breakeven">
-  <div class="sec-head"><div><h2>Break-even: which beliefs flip the answer</h2><p>Start with the two-world teaching device, then compute the full model's break-even surface over any two assumptions.</p></div></div>
+  <div class="sec-head"><div><h2>Break-even: what would flip the answer</h2><p>For each number, the value at which the net advantage crosses zero with everything else held where it is now. Below, the same over any two numbers at once.</p></div></div>
   <div class="two">
-    <div class="card"><h3>Two-world toy</h3><p class="d">The decisive world type is held fixed across policies, so one P(decisive) applies to both. In the full model, policy changes arrival, leads and conflict, so this is a teaching device and not a decomposition. Units are arbitrary.</p>
-      <div class="toy" id="toy"></div><svg class="chart" id="toyChart" role="img" aria-label="Two-world toy"></svg></div>
-    <div class="card"><h3>Full-model surface: A minus B</h3><p class="d">Each cell re-runs the whole model with two assumptions changed and everything else at the current settings. Blue cells favour Policy A, red favour Policy B; the line is break-even.</p>
-      <div class="row"><label class="small">X <select id="beX"></select></label><label class="small">Y <select id="beY"></select></label><label class="small">Worlds per cell <select id="beN"><option>100</option><option selected>200</option><option>400</option></select></label><button class="btn primary" id="beRun" type="button">Compute surface</button></div>
-      <div class="progress"><i id="beProg"></i></div><svg class="chart" id="beChart" role="img" aria-label="Break-even surface"></svg></div>
+    <div class="card"><h3>One number at a time</h3><div class="table-wrap"><table class="fliptable" id="flipTable"></table></div></div>
+    <div class="card"><h3>Two numbers at once</h3><p class="d">Blue favours controls, red favours the alternative; the line is break-even and the ring is the current setting.</p>
+      <div class="row"><label class="small">X <select id="hmX"></select></label><label class="small">Y <select id="hmY"></select></label></div>
+      <svg class="chart" id="heat" role="img" aria-label="Break-even surface"></svg></div>
   </div>
 </section>
 
-<section class="block" id="sensitivity">
-  <div class="sec-head"><div><h2>Sensitivity</h2><p>Each assumption is moved to the low and the high end of its range, one at a time, and A minus B is re-estimated on the same worlds. Long bars matter. Bars that cross zero flip the policy conclusion on their own.</p></div></div>
-  <div class="row"><label class="small">Worlds <select id="toN"><option>150</option><option selected>300</option><option>600</option></select></label><button class="btn primary" id="toRun" type="button">Run sensitivity</button><span class="small muted" id="toNote"></span></div>
-  <div class="progress"><i id="toProg"></i></div>
-  <svg class="chart" id="toChart" role="img" aria-label="Tornado chart"></svg>
-</section>
-
-<section class="block" id="strategic">
-  <div class="sec-head"><div><h2>The strategic game</h2><p>A coarse game: US policies against four Chinese stances. US payoffs use the current worldview and values. China's payoffs use China's own beliefs (a lower prior that AI is decisive) and its own objective: Chinese output, security and sovereign technological capacity. ▲ marks the US best response in each column, ◆ China's best response in each row, and a framed cell is a pure-strategy equilibrium <em>of this grid</em>. This is not the solution of the real geopolitical game.</p></div></div>
-  <div class="row"><label class="small">Worlds <select id="gmN"><option>150</option><option selected>250</option><option>500</option></select></label><button class="btn primary" id="gmRun" type="button">Solve grid</button><span class="small muted" id="gmNote"></span></div>
-  <div class="progress"><i id="gmProg"></i></div>
-  <div class="table-wrap"><table class="matrix" id="gmTable"></table></div>
-</section>
-
-<section class="block" id="assumptions">
-  <div class="sec-head"><div><h2>Assumptions and provenance</h2><p>Every parameter, with its definition, units, uncertainty range, status and source. Edit any value to re-run the model. Edits sit on top of the selected worldview and clear when you switch worldview.</p></div></div>
-  <div class="filters"><input type="search" id="pSearch" placeholder="Search parameters" aria-label="Search parameters"><select id="pGroup" aria-label="Filter by group"></select><select id="pStatus" aria-label="Filter by status"></select><button class="btn" id="pCsv" type="button">Download CSV</button><span class="counts" id="pCounts"></span></div>
-  <div class="table-wrap"><table class="ptable" id="pTable"></table></div>
-</section>
-
-<section class="block" id="model">
-  <div class="sec-head"><div><h2>Model</h2><p>The equations the simulator runs. The same code exists in Python (for large Monte Carlo runs, sensitivity indices and tests) and in this page's JavaScript, and a test checks that both give identical numbers.</p></div></div>
+<section class="block" id="lost">
+  <div class="sec-head"><div><h2>What the lean model leaves out</h2></div></div>
   <div class="prose">
-    <h3>Structure</h3>
-    <p>Time runs in annual steps from 2026 to 2050, plus a terminal value covering the years after 2050, so a short horizon does not favour short-run gains. Every policy starts from the same inherited 2026 state: earlier restrictions, sunk investments and Beijing's procurement mandates do not disappear when a policy knob goes to zero. A US policy is a vector \(x_t=(x_{\text{chips}},x_{\text{HBM}},x_{\text{SME}},x_{\text{cloud}},x_{\text{enf}})\in[0,1]^5\), where higher is more restrictive. Smuggling and diversion leak a share of each restriction; enforcement shrinks that share, and China's evasion effort grows it.</p>
-    <ol>
-      <li>The US sets \(x_t\). The adaptive policy reacts to a noisy reading of last year's capability lead.</li>
-      <li>China responds through an assumed behavioural rule: a procurement mandate, R&amp;D and subsidy effort, retaliation and evasion. These rise with supply insecurity \(h_t\), which jumps when controls tighten and fades slowly when they ease. R&amp;D also rises with Beijing's belief \(b_t\) that AI is decisive.</li>
-      <li>Domestic industry produces what its bottlenecks allow.</li>
-      <li>Chinese buyers split demand between domestic chips and permitted imports.</li>
-      <li>Hardware stocks, power, compute services and capability update.</li>
-      <li>Hazards of transition, catastrophe and war are drawn.</li>
-      <li>Payoff flows are recorded and the state advances.</li>
-    </ol>
-    <h3>Adoption: is the market captive?</h3>
-    <p>The share of Chinese buyers who would choose domestic hardware is</p>
-    <div class="eq">\[ s_t=\sigma\!\Big(a_0+b_m\,m_t\,(1-\varepsilon\,\text{acc}_t)+e_h\,h_t-d_q\ln\frac{q^{\text{imp}}_t}{q^{\text{dom}}_t}\Big). \]</div>
-    <p>Here \(m_t\) is the mandate, \(\text{acc}_t\) is effective access to imports, and \(\varepsilon\) (mandate erosion) is how much of the mandate's force is lost when better imports are actually on offer. With \(\varepsilon=0\), Beijing secures the same captive market with or without imports, which is the decisive worldview's assumption. With \(\varepsilon\) near one, availability of US chips undermines the mandate, which is the continuous worldview's. Blocked import demand partly spills over to domestic chips. A chip is counted once, as domestic or imported, and imports become usable at the start of the next year.</p>
-    <h3>Know-how and output are different things</h3>
-    <p>Know-how indices for logic, HBM, equipment and software are measured relative to the moving frontier, from 0 to 1. Each grows with R&amp;D, with learning from <em>new</em> experience, and with spillovers from foreign tools:</p>
-    <div class="eq">\[ K_{t+1}=(1-\delta)K_t+r\,\rho(y_t)\,\tau_t\,(1-K_t)+\lambda\Big[\ln\!\big(1+\tfrac{E_{t+1}}{\bar E}\big)-\ln\!\big(1+\tfrac{E_t}{\bar E}\big)\Big]+\kappa\,(1-x^{\text{eff}}_t)(1-K_t). \]</div>
-    <p>With no new experience, no R&amp;D and no spillovers, know-how cannot grow, because the same historical deployments are never counted twice. Software learning comes from operating time on domestic chips, weighted by how many leading buyers actually use them. That is the captive-market channel. Output is a separate quantity. It is the minimum of the logic, HBM and packaging bottlenecks in chip equivalents, times final yield, times per-chip performance \(e^{-\gamma(1-K_{\text{logic}})}\). SME controls slow capacity expansion and HBM controls cap the memory supply, so controls can speed know-how while cutting output.</p>
-    <h3>Compute is not capability</h3>
-    <p>Installed hardware is depreciated each year. Power caps how much of it can run, so more electricity cannot help without chips. Rented foreign cloud capacity adds services in the year it is rented and never enters China's hardware stock. Capability, in natural-log units above the 2026 US frontier, is</p>
-    <div class="eq">\[ \ln A^{US}_t=\alpha\ln\frac{T^{US}_t}{T^{US}_0}+G^{US}_t,\qquad \ln A^{CN}_t=\max\!\Big(\min\big(\alpha\ln\tfrac{T^{CN}_t}{T^{US}_0}+G^{CN}_t,\;\ln A^{US}_t-\phi\big),\;\alpha\ln\tfrac{T^{CN}_t}{T^{US}_0}+G^{US}_t-\gamma\Big). \]</div>
-    <p>A 10× training-compute ratio maps to a capability gap of only \(\alpha\ln 10\), measured in years of frontier progress. China's 2026 algorithmic index reproduces the observed lag of about seven months, and diffusion keeps it near that steady state. Borrowed efficiency (imitation, distillation, published research) can keep a follower close to the leader but cannot carry it past. China leads only if its own compute overcomes the intrinsic gap \(\gamma\).</p>
-    <h3>Arrival, decisiveness and durability are separate draws</h3>
-    <p>A transition arrives when frontier capability crosses an uncertain threshold \(\theta\). Its median is solved so that P(transformative AI by 2035 under Maintain) equals the worldview's stated value, and some worlds have no threshold at all. Decisiveness \(d\in[0,1]\) is a world type drawn from a two-regime mixture. The leader's durable capture share and its advantage after arrival are</p>
-    <div class="eq">\[ k=d\,\big(1-e^{-\ell/c}\big)\,(1-\omega O),\qquad a_t=k\cdot 2^{-(t-t^*)/H}. \]</div>
-    <p>Here \(\ell\) is the lead in years at arrival, \(O\) is open-model competitive pressure, and \(H\) is a persistence half-life correlated with \(d\). A world can be transformed with no durable winner: if open models are close to the frontier, the frontier is distributed.</p>
-    <h3>War and catastrophe are hazards</h3>
-    <div class="eq">\[ h^{\text{war}}_t=\sigma\Big(\theta_0+\theta_T(T_t-T_0)+\theta_S\,b_t\,\text{dep}^{TW}_t\,x^{\text{eff}}_{\text{chips},t}-\theta_D\tanh\tfrac{\text{lead}_t}{\tau}-\theta_I(I_t-I_0)+\epsilon_t\Big). \]</div>
-    <p>The intercept \(\theta_0\) is solved so that cumulative incidence \(1-\prod_t(1-h_t)\) by 2040 under Maintain matches the stated baseline. A cumulative target is never applied as an annual increment. A war can deny the US Taiwanese fabs, capture them, or stay limited, and each costs differently. The catastrophe hazard peaks around the transition. A long lead for whoever is ahead lowers it, because it buys time to test systems, and a close race under tension raises it. The hazard is summed over the two developers, each weighted by its own proximity to the threshold, so a trailing developer adds risk while it closes in. Chinese development carries a nationality multiplier, set explicitly in each worldview (1 = no difference). The leader's reduction from its lead is scaled by the share of slack actually spent on safety, which is low if labs in the leading country race each other. Because a catastrophe has no feedback on the simulated state, its loss is valued as an exact expectation along each path, \(1-\prod_t(1-h^{\text{cat}}_t)\), rather than from rare simulated events; the outcome probabilities still report simulated events.</p>
-    <h3>Payoffs: a vector, aggregated last</h3>
-    <p>Each world yields discounted components:</p>
     <ul>
-      <li>AI-driven output for the US, China and the rest of the world, including idea spillovers between them;</li>
-      <li>trade: export profit net of sales that would have happened anyway, retaliation, decoupling and subsidy costs;</li>
-      <li>openness gains and the markups paid to closed providers;</li>
-      <li>the leader's capture of others' contestable post-transition surplus, and the cost to every economy if a durable order turns out institutionally adverse;</li>
-      <li>war and catastrophe losses;</li>
-      <li>indices of exposure to coercion, liberty and integration.</li>
+      <li><strong>Path dependence.</strong> A lead is summarised by its starting size and a half-life. The engine's lead path can rise, plateau or turn negative, and its value is not linear in the lead's length: a decisive advantage saturates, and so does the safety slack.</li>
+      <li><strong>China's strategic response.</strong> Mandates, subsidies, retaliation, evasion and Beijing's changing beliefs are folded into the lead numbers and the war term. In the engine's parameter sweep these were second-order, but only under the engine's own assumptions about how China responds.</li>
+      <li><strong>Signalling, tension and interdependence as states.</strong> These appear only through the single war-risk change.</li>
+      <li><strong>Industrial detail.</strong> HBM, packaging, yields, equipment and power are collapsed into the compute multiple and its half-life. About sixty engine parameters reduce to "how many months of lead do controls buy, and how fast does it fade".</li>
+      <li><strong>Outcome regimes and war types.</strong> Distributed or near-simultaneous arrival, durable versus dissipating leads, and denial versus capture wars are averaged into the value scalars.</li>
     </ul>
-    <p>There is no "winner" jackpot. The value of a lead comes only from the capture and coercion that the lead, capture share and persistence actually produce. A US firm's lost Chinese revenue is not a dollar-for-dollar US loss: when supply is scarce, a sale to China displaces a sale elsewhere. The three value sets weight the same vector differently, so empirical and ethical disagreements stay separable.</p>
-    <h3>What this model does and does not claim</h3>
-    <p>There are three kinds of claim here. A <em>scenario</em> runs under China's assumed response rule. A <em>policy comparison</em> holds inside one causal model. An <em>equilibrium</em> is one of a specified coarse game, reported with deviation gains. None of these is the true geopolitical equilibrium. The parameters are mostly illustrative. The calibration anchors (the 2026 compute ratio, the capability lag, domestic market shares, GDP, war costs) are sourced but loosely mapped. Emergent quantities, such as the extra domestic adoption that controls cause or the long-run compute ratio, are outputs to check against intuition and evidence, not inputs.</p>
-    <h3>Reproduce</h3>
-    <p>The Python package runs large Monte Carlo comparisons, break-even grids, global sensitivity with value of information, stress tests and the strategic game:</p>
-    <pre>pip install -e ".[dev]"
-python -m ai_controls.cli compare --configs configs/fox_continuous.yaml \
-    configs/erich_decisive.yaml configs/agnostic_wide.yaml --runs 10000 --seed 42
-python -m ai_controls.cli sensitivity --config configs/agnostic_wide.yaml --runs 8000
-pytest</pre>
-    <p>Source, configuration files and tests: <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model">github.com/Forkhead-box-protein-P2/ai-export-controls-model</a>.</p>
+    <p>How much this loses is measured, not assumed. With value scalars calibrated on Maintain vs Relax chips only, the lean formula reproduces the engine's other policy comparisons as follows: <span id="valSummary"></span> Details are in the next section.</p>
   </div>
 </section>
 
-<section class="block" id="sources">
-  <div class="sec-head"><div><h2>Sources</h2><p>Empirical anchors, with their dates. Several are secondary reports or modelled estimates, and their definitions differ (installed stock, chip arrivals and modelled compute are not the same metric).</p></div></div>
-  <ol class="refs" id="refs"></ol>
+<section class="block" id="numbers">
+  <div class="sec-head"><div><h2>Where the numbers come from</h2><p>The engine is a year-by-year stochastic game: US policy, China's response, domestic adoption, know-how and output, compute and capability, the arrival, decisiveness and durability of a transition, war and catastrophe hazards, and a weighted payoff vector. For each worldview, it is run on 3,000 paired worlds and reduced to the fifteen numbers below. <a href="engine.html">Explore the full engine</a>, or see the <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model">source, configs and tests</a>.</p></div></div>
+  <div class="table-wrap"><table id="derivTable"></table></div>
+  <h3 style="margin:26px 0 6px">Does the lean formula reproduce the engine?</h3>
+  <p class="small muted" style="max-width:860px">Net advantage of controls, $tn present value, for the selected worldview. The yearly-cost and war terms are read from the engine for each comparison, so they match by construction. The test is whether the lead and safety terms, with the value of a month of lead and the risk cut per month calibrated on Maintain vs Relax chips only, carry over to the other comparisons and value sets.</p>
+  <div class="table-wrap"><table id="valTable"></table></div>
+  <h3 style="margin:26px 0 6px">Known issues in the engine</h3>
+  <div class="prose"><ul>
+    <li><strong>Chinese power never binds.</strong> Chinese datacentre power is defined as a multiple of China's 2026 need, so the performance-per-watt penalty cancels. The argument that cheap power can substitute for worse chips cannot show up.</li>
+    <li><strong>US datacentre power growth is a big lever.</strong> In the decisive worldview it is among the largest levers, although neither side argued about it.</li>
+    <li><strong>China never leads.</strong> In the three main worldviews China never leads, so terms that need a Chinese lead are close to inactive: a China-led adverse order, US exposure to coercion, and Chinese capture of US surplus. The catastrophe hazard was redesigned per developer so that a trailing Chinese lab still counts.</li>
+    <li><strong>Large but unsourced levers:</strong> the closest a follower can get on borrowed efficiency, spillovers from Chinese research, the openness effect on catastrophe risk, and the race multiplier. Treat them as cruxes.</li>
+  </ul><p class="small muted">From a parameter sweep of every ranged engine input (low and high, three worldviews, two comparisons, two value sets).</p></div>
 </section>
 </div>
 </main>
-<footer class="footer"><div class="wrap">AI export controls game model · an interactive, illustrative decision model. Parameters are editable and mostly illustrative; nothing here is a forecast.</div></footer>
+<footer class="footer"><div class="wrap">Do export controls pay? · a lean, editable decision model with a <a href="engine.html">full engine</a> behind it. Nothing here is a forecast.</div></footer>
 <div id="tip" role="tooltip"></div>
-<script src="web/params.js?v=3"></script>
-<script src="web/model.js?v=3"></script>
-<script src="web/app.js?v=3"></script>
+<script src="web/lean_params.js?v=4"></script>
+<script src="web/lean.js?v=4"></script>
+<script src="web/lean_app.js?v=4"></script>
 </body>
 </html>

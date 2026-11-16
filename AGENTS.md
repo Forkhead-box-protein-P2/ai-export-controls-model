@@ -1,6 +1,6 @@
 # AI export controls game model
 
-Python model in `src/ai_controls`, browser port in `web/model.js`, site at `index.html` (GitHub Pages serves `main` from the repository root; keep `.nojekyll`). Parameters live only in `configs/*.yaml`; after editing them run `python -m ai_controls.cli export-web` to regenerate `web/params.js`.
+Lean front page `index.html` (formula in `src/ai_controls/lean.py` and `web/lean.js`; defaults from `ai-controls lean`). Full engine: Python in `src/ai_controls`, browser port `web/model.js`, page `engine.html` (GitHub Pages serves `main` from the repository root; keep `.nojekyll`). Parameters live only in `configs/*.yaml`; after editing them run `python -m ai_controls.cli export-web` and `python -m ai_controls.cli lean` to regenerate `web/params.js` and `web/lean_params.js`.
 
 - Any change to the model equations must be made in both `src/ai_controls/` and `web/model.js`; `pytest` includes `tests/test_web_parity.py`, which fails if they diverge. Bump the `?v=` query on the asset links in `index.html` when assets change.
 - Keep empirical claims sourced and subjective assumptions labelled (`status` in the YAML). Never present illustrative values as measurements, or attribute numbers to debate participants beyond what they stated.
