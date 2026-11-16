@@ -1,0 +1,362 @@
+# Baseline configuration: the single parameter registry.
+#
+# Every parameter has: name, group, def (definition), units, status, value, low/high
+# (uncertainty range), dist (triangular unless stated), src (keys into `sources`), and
+# optionally factor [name, loading] for correlated draws and ui: true for a site slider.
+#
+# status: observed | estimated | elicited | illustrative
+#   estimated    = anchored to a cited source; the mapping from the source's metric to this
+#                  parameter is still a judgment.
+#   illustrative = a test input chosen for exploration, not an empirical estimate.
+#
+# Other configurations extend this file and override values.
+meta:
+  label: Baseline
+  description: Central illustrative values with sourced anchors where they exist. Parameters are fixed at their central values; only world types and shocks vary.
+  last_updated: "2026-11-15"
+
+horizon: {start_year: 2026, end_year: 2050}
+reference_policy: maintain
+sampling: none          # none | listed | all
+factors: [china_industry, ai_decisive, captive]
+
+# Policy vector order: [chips, hbm, sme, cloud, enforcement]; higher is more restrictive.
+# status_quo is the inherited 2026 regime and applies in 2026 under every policy.
+status_quo: [0.90, 0.90, 0.85, 0.40, 0.60]
+policies:
+  maintain:
+    label: Maintain
+    desc: Keep the 2026 framework on chips, HBM, SME and cloud access.
+    type: fixed
+    x: [0.90, 0.90, 0.85, 0.40, 0.60]
+  tighten:
+    label: Tighten
+    desc: Close remaining chip sales and cloud access and raise enforcement.
+    type: fixed
+    x: [0.97, 1.00, 0.95, 0.80, 0.90]
+  relax_chips:
+    label: Relax chips only
+    desc: Allow most AI-chip exports; keep HBM and SME controls.
+    type: fixed
+    x: [0.15, 0.90, 0.85, 0.30, 0.60]
+  relax_chips_hbm:
+    label: Relax chips and HBM
+    desc: Allow most AI-chip and HBM exports; keep SME controls.
+    type: fixed
+    x: [0.15, 0.15, 0.85, 0.30, 0.60]
+  selective:
+    label: Selective licensing
+    desc: Capped volumes of below-frontier chips, monitored cloud access, strong enforcement.
+    type: fixed
+    x: [0.50, 0.90, 0.85, 0.20, 0.90]
+  broad_relax:
+    label: Broad relaxation
+    desc: Lift most chip, HBM and SME limits.
+    type: fixed
+    x: [0.10, 0.10, 0.20, 0.10, 0.50]
+  adaptive:
+    label: Adaptive
+    desc: Start selective, then tighten or loosen chips and cloud to hold a target capability lead.
+    type: adaptive
+    x: [0.50, 0.90, 0.85, 0.30, 0.80]
+    dims: [0, 3]
+    target_lag: 0.6
+    gain: 0.8
+    min: [0.10, 0.90, 0.85, 0.10, 0.80]
+    max: [0.97, 0.90, 0.85, 0.80, 0.80]
+
+# China's stance multipliers for the strategic-game analysis. "rule" is the assumed
+# behavioural response; the others scale its indigenisation push and its confrontation.
+stances:
+  rule: {label: Assumed rule, indig: 1.0, conf: 1.0}
+  accommodate: {label: Accommodate, indig: 0.7, conf: 0.4}
+  surge: {label: Indigenisation surge, indig: 1.5, conf: 1.0}
+  confront: {label: Confront, indig: 1.2, conf: 2.0}
+
+# Normative weight sets (the analyst's values, separate from the world model).
+# money: weight on each actor's dollar-denominated components.
+# rent_weight: weight on markups received by US model providers, relative to other US dollars.
+# v_*: trillions of 2026 dollars per index-year. war_extra / cat_extra: non-GDP harm as a
+# multiple of the GDP loss. lead_extra_*: value per durable-advantage index-year beyond the
+# modelled surplus capture and coercion (zero unless an unmodelled mechanism is intended).
+weights:
+  us_interest:
+    label: US national interest
+    desc: Counts US output, US security and US-borne losses.
+    money: {us: 1.0, cn: 0.0, row: 0.0}
+    v_sec_us: 1.5
+    v_sec_cn: 0.0
+    v_liberty: 0.3
+    v_trust: 0.05
+    rent_weight: 1.0
+    war_extra: 1.0
+    cat_extra: 1.0
+    lead_extra_us: 0.0
+    lead_extra_cn: 0.0
+  global:
+    label: Global welfare
+    desc: Counts every actor's output dollar for dollar and coercion of either power.
+    money: {us: 1.0, cn: 1.0, row: 1.0}
+    v_sec_us: 1.5
+    v_sec_cn: 1.0
+    v_liberty: 1.0
+    v_trust: 0.2
+    rent_weight: 1.0
+    war_extra: 1.0
+    cat_extra: 1.0
+    lead_extra_us: 0.0
+    lead_extra_cn: 0.0
+  pluralist:
+    label: Pluralist / liberty-weighted
+    desc: Global welfare plus a high value on openness and a penalty on any durable concentration of power.
+    money: {us: 1.0, cn: 1.0, row: 1.0}
+    v_sec_us: 1.5
+    v_sec_cn: 1.0
+    v_liberty: 4.0
+    v_trust: 0.3
+    rent_weight: 1.0
+    war_extra: 1.0
+    cat_extra: 1.0
+    lead_extra_us: -1.0
+    lead_extra_cn: -2.0
+
+# China's objective and beliefs, used only by the strategic-game analysis. China evaluates
+# its options under its own beliefs, which need not match the analyst's parameters.
+china_objective:
+  label: China's objective
+  money: {us: 0.0, cn: 1.0, row: 0.0}
+  v_sec_us: 0.0
+  v_sec_cn: 1.0
+  v_sov_cn: 0.5
+  v_liberty: 0.0
+  v_trust: 0.05
+  war_extra: 1.0
+  cat_extra: 1.0
+  lead_extra_us: 0.0
+  lead_extra_cn: 0.0
+china_beliefs: {p_high_dec: 0.15, p_tai_2035: 0.45}
+
+sources:
+  epoch_customs: {title: "US share of new compute (Epoch AI chip-import data, as reported)", publisher: OfficeChai, date: "2026-10-28", url: "https://officechai.com/ai/the-uss-share-of-new-compute-has-risen-from-60-in-2024-to-78-in-first-half-of-2026/", note: "Cumulative since 2022: US 72.2%, China 9.6% (about 7.5:1). US 78% of new compute in H1 2026. Secondary report of Epoch data."}
+  epoch_clusters: {title: "AI supercomputer performance share by country", publisher: Epoch AI, date: "2025-06-05", url: "https://epoch.ai/data-insights/ai-supercomputers-performance-share-by-country", note: "US about 75%, China about 15% of GPU-cluster performance (about 5:1); covers a minority of global compute."}
+  ifp_lead: {title: "How to Increase America's AI Lead Over China", publisher: IFP, date: "2026-10-19", url: "https://ifp.org/wp-content/uploads/How-to-Increase-Americas-AI-Lead-Over-China_IFP2026.pdf", note: "US:China compute about 9x rising to 13x by end-2027; Chinese domestic output about 986k H100-equivalents in 2026; smuggling about 341k in 2026; about 10.8 months of lead per 10x training compute; Huawei foreign-HBM stockpile; 16% of 2026 output on domestic HBM. Modelled estimates."}
+  ifp_blackwell: {title: "Should the US Sell Blackwell Chips to China?", publisher: IFP, date: "2025-10-25", url: "https://ifp.org/wp-content/uploads/Should-the-US-Sell-Blackwell-Chips-to-China.pdf", note: "Modelled 2026 compute acquired: about 31x US advantage under a full ban, under 4x if a Blackwell-derived chip is exported."}
+  epoch_huawei: {title: "Huawei's Roadmap to 2031", publisher: Epoch AI, date: "2026-09-04", url: "https://epoch.ai/publications/huaweis-roadmap-to-2031", note: "Huawei under 4% of Nvidia's 2026 compute output; chips trail Nvidia's by three to four years; HBM is the binding constraint."}
+  idc_h1_2026: {title: "Nvidia's China AI chip share falls to 34% as Huawei reaches 28% (IDC data)", publisher: TechNode, date: "2026-10-14", url: "https://technode.com/2026/10/14/nvidias-china-ai-chip-share-falls-to-34-as-huawei-reaches-28/", note: "H1 2026 unit shares of China's data-centre accelerator market."}
+  epoch_china_lag: {title: "US vs China on the Epoch Capabilities Index", publisher: Epoch AI, date: "2026-01-02", url: "https://epoch.ai/data-insights/us-vs-china-eci", note: "Chinese models trailed US models by about seven months on average since 2023."}
+  epoch_open_gap: {title: "Open vs closed model gap on the Epoch Capabilities Index", publisher: Epoch AI, date: "2026-05-29", url: "https://epoch.ai/data-insights/open-closed-eci-gap", note: "Open models lagged the closed frontier by about four months in 2026."}
+  epoch_trends: {title: "Trends in AI", publisher: Epoch AI, date: "2026-02-05", url: "https://epoch.ai/data/trends", note: "Frontier training compute about 5x per year since 2020; hardware price-performance about 49% per year since 2023."}
+  imf_weo: {title: "IMF World Economic Outlook projections for 2026 (as reported)", publisher: CEOWorld, date: "2026-11-05", url: "https://ceoworld.biz/2026/11/05/global-gdp-2026-every-major-economy-ranked-by-the-imf/", note: "Nominal GDP 2026: US 32.64, China 21.55, world 128.0 trillion dollars. Secondary report; not checked against the IMF tables."}
+  bloomberg_taiwan: {title: "Bloomberg Economics estimates of a Taiwan war or blockade (as reported)", publisher: Insurance Journal, date: "2026-02-12", url: "https://www.insurancejournal.com/news/international/2026/02/12/857770.htm", note: "War: about 9.6% of global GDP in year one. Blockade: global -5.3%, China -8.9%, US -3.2%."}
+  fortune_depreciation: {title: "Hyperscaler hardware depreciation", publisher: Fortune, date: "2026-04-15", url: "https://fortune.com/2026/04/15/data-centers-hyperscalers-spending-billions-on-hardware-thats-worthless-in-3-years/", note: "Accounting useful lives of roughly five to six years; shorter economic life argued."}
+  semianalysis_power: {title: "Datacentre capacity, China and US (SemiAnalysis, as reported)", publisher: AI Weekly, date: "2026-10-08", url: "https://aiweekly.co/alerts/semianalysis-pegs-china-datacenter-capacity-at-24gw-us-at-56gw", note: "Delivered datacentre capacity: China over 24 GW, US 56 GW; not AI-specific."}
+  iea_energy_ai: {title: "Energy and AI", publisher: IEA, date: "2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary", note: "Datacentre electricity about 415 TWh in 2024; US 45%, China 25%."}
+  cnas_smuggling: {title: "Countering AI Chip Smuggling Has Become a National Security Priority", publisher: CNAS, date: "2025-06-11", url: "https://www.cnas.org/publications/reports/countering-ai-chip-smuggling-has-become-a-national-security-priority", note: "2024 smuggling: about 10,000 to several hundred thousand chips, median about 140,000."}
+  epoch_smuggling: {title: "Chip smuggling estimates", publisher: Epoch AI, date: "2026-04-29", url: "https://epoch.ai/blog/chip-smuggling", note: "290,000 to 1.6 million H100-equivalents smuggled to China through 2025 (90% interval)."}
+  covington_h200: {title: "Commerce revises licence review policy for certain advanced computing exports to China and Macau", publisher: Covington, date: "2026-01", url: "https://www.cov.com/en/news-and-insights/insights/2026/01/us-commerce-department-revises-license-review-policy-for-exports-of-certain-advanced-computing-commodities-to-china-and-macau", note: "H200-class exports moved to case-by-case review with volume and performance conditions, effective 2026-01-15."}
+  trendforce_sme: {title: "China chip-tool push sets 70% target by 2027", publisher: TrendForce, date: "2026-02-20", url: "https://www.trendforce.com/news/2026/02/20/news-china-reportedly-ramps-up-chip-tool-push-sets-70-target-by-2027-smee-naura-at-forefront/", note: "New capacity must source more than half of equipment domestically; 70% target for mature-node tools."}
+  trendforce_duv: {title: "Huawei reportedly backs China's DUV drive", publisher: TrendForce, date: "2026-09-08", url: "https://www.trendforce.com/news/2026/09/08/news-huawei-reportedly-backs-chinas-duv-drive-with-12-systems-targeted-by-end-2026-smic-testing-underway/", note: "Domestic immersion DUV in testing; lines still rely on ASML."}
+  cxmt_hbm: {title: "China's CXMT begins HBM3E production", publisher: Korea JoongAng Daily, date: "2026-09", url: "https://www.koreajoongangdaily.com/business/chinas-cxmt-begins-hbm3e-production-as-chip-battle-with-korean-powerhouses-widens/12854260", note: "Small-scale HBM3E production; leading suppliers already on HBM4."}
+  openrouter_soai: {title: "State of AI", publisher: OpenRouter, date: "2025", url: "https://openrouter.ai/state-of-ai", note: "Chinese open-source models averaged about 13% of weekly tokens (Nov 2024 to Nov 2025), peaking near 30%."}
+
+parameters:
+  # ---------------------------------------------------------------- Western supply and stocks
+  - {name: c_us0, group: Compute supply, value: 100, units: CU, status: illustrative, def: "US installed AI hardware capacity at the start of 2026. Normalisation: one compute unit (CU) is 1% of this stock, in standardised FLOP/s."}
+  - {name: ratio0, group: Compute supply, value: 7.5, low: 5, high: 10, units: ratio, status: estimated, src: "epoch_customs,epoch_clusters,ifp_lead", ui: true, def: "US:China ratio of installed AI hardware capacity at the start of 2026."}
+  - {name: stock_dom_share0, group: Compute supply, value: 0.30, low: 0.2, high: 0.4, units: share, status: estimated, src: "ifp_lead", def: "Share of China's 2026 hardware stock that is domestically made."}
+  - {name: w0, group: Compute supply, value: 190, low: 150, high: 240, units: CU/yr, status: estimated, src: "ifp_lead", def: "Western accelerator output in 2026, as capacity added per year. Set so the US stock roughly doubles during 2026."}
+  - {name: us_share_w, group: Compute supply, value: 0.82, low: 0.7, high: 0.9, units: share, status: estimated, src: "epoch_customs", def: "US share of Western accelerator output that does not go to China."}
+  - {name: g_w0, group: Compute supply, value: 0.65, low: 0.4, high: 0.9, units: log/yr, status: illustrative, ui: true, def: "Initial growth rate of Western accelerator output (log points per year, units times performance)."}
+  - {name: g_w_inf, group: Compute supply, value: 0.12, low: 0.05, high: 0.25, units: log/yr, status: illustrative, def: "Long-run growth rate of Western accelerator output."}
+  - {name: g_w_halflife, group: Compute supply, value: 4, low: 2.5, high: 7, units: years, status: illustrative, def: "Half-life with which output growth decays from its initial to its long-run rate."}
+  - {name: perf_share, group: Compute supply, value: 0.6, low: 0.4, high: 0.8, units: share, status: estimated, src: "epoch_trends", def: "Share of output growth that comes from per-chip performance rather than unit volume."}
+  - {name: dep, group: Compute supply, value: 0.20, low: 0.15, high: 0.33, units: 1/yr, status: estimated, src: "fortune_depreciation", def: "Annual depreciation of installed hardware capacity."}
+  - {name: scarcity, group: Compute supply, value: 0.7, low: 0.2, high: 1.0, units: share, status: illustrative, ui: true, def: "Share of chips sold or rented to China that would otherwise have gone to US or third-country buyers. At 1, supply is fixed and China sales displace other sales one for one."}
+  - {name: scarcity_halflife, group: Compute supply, value: 3, low: 1, high: 10, units: years, status: illustrative, ui: true, def: "Half-life of that scarcity: fabrication and packaging capacity respond to demand over time, so later China sales add to total output instead of displacing other buyers."}
+  - {name: rev_rd_feedback, group: Compute supply, value: 0.0, low: 0.0, high: 0.3, units: log/yr per share, status: illustrative, def: "Extra growth in Western output per unit of China's share of sales (revenue reinvested in R&D)."}
+  - {name: util, group: Compute supply, value: 0.6, units: share, status: illustrative, def: "Utilisation of powered hardware. Cancels in ratios."}
+  - {name: train_share, group: Compute supply, value: 0.3, units: share, status: illustrative, def: "Share of compute services used for frontier training. Cancels in ratios."}
+  # ---------------------------------------------------------------- Chinese demand and adoption
+  - {name: demand_share, group: Chinese market, value: 0.20, low: 0.12, high: 0.4, units: share, status: estimated, src: "idc_h1_2026", ui: true, def: "China's unconstrained demand for new AI hardware as a share of Western output."}
+  - {name: sal_b, group: Chinese market, value: 0.5, low: 0.0, high: 1.0, units: elasticity, status: illustrative, def: "Increase in Chinese hardware demand per unit rise in China's belief that AI is decisive."}
+  - {name: pref_a0, group: Chinese market, value: -0.5, low: -1.5, high: 0.5, units: logit, status: illustrative, def: "Intercept of the domestic-preference share."}
+  - {name: pref_bm, group: Chinese market, value: 2.5, low: 1.0, high: 4.0, units: logit, status: illustrative, def: "Effect of the procurement mandate on domestic preference."}
+  - {name: mandate_erosion, group: Chinese market, value: 0.4, low: 0.0, high: 0.9, units: share, status: illustrative, ui: true, factor: [captive, 0.6], def: "How much of the mandate's force is lost when superior imports are fully available. Zero means the state secures the same captive market with or without imports."}
+  - {name: pref_eh, group: Chinese market, value: 1.0, low: 0.0, high: 2.0, units: logit, status: illustrative, def: "Effect of supply insecurity on domestic preference."}
+  - {name: pref_dq, group: Chinese market, value: 1.0, low: 0.3, high: 2.5, units: logit per log, status: illustrative, ui: true, factor: [captive, 0.6], def: "Sensitivity of buyers to the quality gap between permitted imports and domestic chips."}
+  - {name: spill_dom, group: Chinese market, value: 0.6, low: 0.2, high: 0.9, units: share, status: illustrative, def: "Share of blocked import demand that turns to domestic chips instead of going unmet."}
+  - {name: backfill, group: Chinese market, value: 0.6, low: 0.2, high: 1.0, units: share, status: illustrative, def: "Share of a domestic supply shortfall that accessible imports fill."}
+  - {name: access_ramp, group: Chinese market, value: 0.5, low: 0.25, high: 1.0, units: 1/yr, status: illustrative, def: "Speed at which import access recovers after controls ease."}
+  - {name: q_imp_floor, group: Chinese market, value: 0.5, low: 0.2, high: 0.8, units: share, status: illustrative, def: "Performance penalty on the best permitted import at full chip restriction (permitted chips are below frontier)."}
+  - {name: leak_chips, group: Chinese market, value: 0.30, low: 0.1, high: 0.6, units: share, status: estimated, src: "cnas_smuggling,epoch_smuggling,ifp_lead", def: "Maximum share of the chip restriction that leaks through smuggling and diversion at zero enforcement."}
+  - {name: leak_hbm, group: Chinese market, value: 0.20, low: 0.05, high: 0.4, units: share, status: illustrative, def: "Maximum leakage of the HBM restriction."}
+  - {name: leak_sme, group: Chinese market, value: 0.10, low: 0.02, high: 0.25, units: share, status: illustrative, def: "Maximum leakage of the SME restriction."}
+  - {name: leak_cloud, group: Chinese market, value: 0.50, low: 0.2, high: 0.8, units: share, status: illustrative, def: "Maximum leakage of the cloud-access restriction."}
+  - {name: cloud_suit, group: Chinese market, value: 0.3, low: 0.1, high: 0.6, units: share, status: illustrative, def: "Share of China's unmet hardware need that could be served by renting foreign compute."}
+  - {name: cloud_train_discount, group: Chinese market, value: 0.3, low: 0.0, high: 0.8, units: share, status: illustrative, def: "Usefulness of rented foreign compute for frontier training relative to owned hardware."}
+  - {name: backlog0, group: Chinese market, value: 0.5, low: 0.2, high: 1.0, units: multiple of stock, status: illustrative, def: "China's unmet hardware need at the start of 2026, relative to its stock."}
+  - {name: usab_min, group: Chinese market, value: 0.5, low: 0.3, high: 0.8, units: share, status: illustrative, def: "Usable performance of domestic chips when the domestic software stack is immature (K_soft = 0)."}
+  # ---------------------------------------------------------------- Chinese industry
+  - {name: qdom_share0, group: Chinese industry, value: 0.035, low: 0.02, high: 0.05, units: share, status: estimated, src: "epoch_huawei,ifp_lead", def: "Chinese domestic accelerator output in 2026 as a share of Western output, in capacity terms."}
+  - {name: hbm_cov0, group: Chinese industry, value: 0.16, low: 0.08, high: 0.3, units: share, status: estimated, src: "ifp_lead,cxmt_hbm", def: "Share of 2026 domestic chip output that domestic HBM can supply."}
+  - {name: hbm_stock0, group: Chinese industry, value: 2.2, low: 1.2, high: 3.0, units: years of 2026 output, status: estimated, src: "ifp_lead", def: "Stockpile of foreign HBM at the start of 2026."}
+  - {name: pack_cov0, group: Chinese industry, value: 1.5, low: 1.1, high: 2.5, units: multiple, status: illustrative, def: "Advanced packaging capacity in 2026 relative to logic output."}
+  - {name: g_pack, group: Chinese industry, value: 0.45, low: 0.3, high: 0.7, units: log/yr, status: illustrative, def: "Growth rate of packaging capacity at baseline subsidy effort."}
+  - {name: g_cap_max, group: Chinese industry, value: 0.70, low: 0.45, high: 1.0, units: log/yr, status: illustrative, ui: true, factor: [china_industry, 0.6], def: "Growth rate of advanced logic capacity with full equipment access, baseline subsidies and full utilisation."}
+  - {name: g_hbm_max, group: Chinese industry, value: 1.6, low: 0.9, high: 2.2, units: log/yr, status: illustrative, factor: [china_industry, 0.6], def: "Growth rate of domestic HBM capacity under the same conditions."}
+  - {name: eta_sme, group: Chinese industry, value: 1.0, low: 0.5, high: 2.0, units: elasticity, status: illustrative, def: "Elasticity of capacity growth to equipment access."}
+  - {name: sub_beta, group: Chinese industry, value: 0.5, low: 0.2, high: 0.8, units: elasticity, status: illustrative, def: "Elasticity of capacity growth to subsidy and R&D effort."}
+  - {name: util_pull, group: Chinese industry, value: 0.8, low: 0.0, high: 1.0, units: share, status: illustrative, factor: [captive, 0.4], def: "How far capacity investment is disciplined by demand. At 0 the state builds whatever is feasible; at 1 an industry that cannot sell its output stops expanding."}
+  - {name: sme_share0, group: Chinese industry, value: 0.35, low: 0.2, high: 0.5, units: share, status: estimated, src: "trendforce_sme", def: "Share of domestic tools in fab expansion when foreign tools are unrestricted."}
+  - {name: yield_min, group: Chinese industry, value: 0.05, units: share, status: illustrative, def: "Manufacturing yield at know-how index zero."}
+  - {name: yield_max, group: Chinese industry, value: 0.75, units: share, status: illustrative, def: "Manufacturing yield at know-how index one."}
+  - {name: final_yield, group: Chinese industry, value: 0.9, units: share, status: illustrative, def: "Final assembly yield, applied once."}
+  - {name: q_gamma, group: Chinese industry, value: 2.5, low: 1.5, high: 3.5, units: log per index, status: estimated, src: "epoch_huawei", def: "Per-chip performance shortfall per unit of know-how gap: q = exp(-q_gamma (1 - K_logic))."}
+  - {name: ppw_gamma, group: Chinese industry, value: 1.0, low: 0.4, high: 1.8, units: log per index, status: illustrative, def: "Performance-per-watt shortfall per unit of know-how gap."}
+  - {name: k_logic0, group: Chinese industry, value: 0.35, low: 0.25, high: 0.45, units: index, status: estimated, src: "epoch_huawei", def: "Logic design and process know-how in 2026, relative to the Western frontier (1 = parity)."}
+  - {name: k_hbm0, group: Chinese industry, value: 0.30, low: 0.2, high: 0.45, units: index, status: estimated, src: "cxmt_hbm", def: "HBM know-how in 2026."}
+  - {name: k_sme0, group: Chinese industry, value: 0.30, low: 0.2, high: 0.45, units: index, status: estimated, src: "trendforce_duv", def: "Equipment (SME) know-how in 2026: how well domestic tools substitute for restricted ones."}
+  - {name: k_soft0, group: Chinese industry, value: 0.40, low: 0.25, high: 0.6, units: index, status: illustrative, def: "Maturity of the domestic software and systems stack in 2026."}
+  - {name: k_decay, group: Chinese industry, value: 0.06, low: 0.03, high: 0.10, units: 1/yr, status: illustrative, factor: [china_industry, -0.4], def: "Rate at which a standing-still follower falls behind the moving frontier."}
+  - {name: k_cap, group: Chinese industry, value: 1.0, units: index, status: illustrative, def: "Upper bound on know-how indices (parity with the frontier)."}
+  - {name: rd_logic, group: Chinese industry, value: 0.035, low: 0.015, high: 0.07, units: 1/yr, status: illustrative, ui: true, factor: [china_industry, 0.6], def: "Catch-up rate of logic know-how from R&D at baseline effort."}
+  - {name: rd_hbm, group: Chinese industry, value: 0.06, low: 0.03, high: 0.10, units: 1/yr, status: illustrative, factor: [china_industry, 0.5], def: "Catch-up rate of HBM know-how from R&D."}
+  - {name: rd_sme, group: Chinese industry, value: 0.025, low: 0.01, high: 0.06, units: 1/yr, status: illustrative, ui: true, factor: [china_industry, 0.6], def: "Catch-up rate of equipment know-how from R&D."}
+  - {name: rd_soft, group: Chinese industry, value: 0.05, low: 0.02, high: 0.10, units: 1/yr, status: illustrative, def: "Catch-up rate of software-stack maturity from R&D."}
+  - {name: rd_tool_dep, group: Chinese industry, value: 0.5, low: 0.2, high: 0.8, units: share, status: illustrative, def: "Share of logic and HBM R&D returns that depends on access to equipment."}
+  - {name: learn_logic, group: Chinese industry, value: 0.04, low: 0.0, high: 0.12, units: index per log, status: illustrative, ui: true, factor: [china_industry, 0.4], def: "Logic know-how gained per log point of cumulative production."}
+  - {name: learn_hbm, group: Chinese industry, value: 0.05, low: 0.0, high: 0.12, units: index per log, status: illustrative, def: "HBM know-how gained per log point of cumulative production."}
+  - {name: learn_sme, group: Chinese industry, value: 0.03, low: 0.0, high: 0.1, units: index per log, status: illustrative, factor: [china_industry, 0.4], def: "Equipment know-how gained per log point of cumulative domestic-tool deployment."}
+  - {name: learn_soft, group: Chinese industry, value: 0.06, low: 0.0, high: 0.20, units: index per log, status: illustrative, ui: true, factor: [captive, 0.5], def: "Software-stack maturity gained per log point of cumulative operating experience on domestic chips."}
+  - {name: exp_years0, group: Chinese industry, value: 2, low: 1, high: 4, units: years, status: illustrative, def: "Cumulative experience at the start of 2026, in years of the 2026 flow. Also the experience scale."}
+  - {name: spill_k, group: Chinese industry, value: 0.02, low: 0.0, high: 0.06, units: 1/yr, status: illustrative, def: "Know-how spillover from access to foreign tools and components."}
+  - {name: rev_rd, group: Chinese industry, value: 0.5, low: 0.0, high: 1.5, units: effort per share, status: illustrative, factor: [captive, 0.5], def: "Extra R&D effort funded per unit of domestic vendors' share of Chinese demand."}
+  - {name: lab_sens, group: Chinese industry, value: 0.5, low: 0.0, high: 1.0, units: share, status: illustrative, ui: true, factor: [captive, 0.5], def: "How much software-stack learning depends on leading buyers actually running on domestic chips."}
+  # ---------------------------------------------------------------- China's response and beliefs
+  - {name: h0, group: Beliefs and response, value: 0.8, low: 0.6, high: 0.95, units: index, status: illustrative, def: "China's supply-insecurity memory in 2026, left by controls since 2022."}
+  - {name: h_up, group: Beliefs and response, value: 0.6, low: 0.3, high: 1.0, units: 1/yr, status: illustrative, def: "Speed at which insecurity rises when controls tighten."}
+  - {name: h_down, group: Beliefs and response, value: 0.08, low: 0.02, high: 0.3, units: 1/yr, status: illustrative, ui: true, def: "Speed at which insecurity fades when controls ease. Low values make past controls hard to undo."}
+  - {name: b_cn0, group: Beliefs and response, value: 0.35, low: 0.15, high: 0.6, units: probability, status: illustrative, ui: true, def: "Chinese leadership's 2026 belief that AI is strategically decisive. It need not match the analyst's or the US government's."}
+  - {name: sig_eta, group: Beliefs and response, value: 0.05, low: 0.0, high: 0.2, units: 1/yr, status: illustrative, ui: true, def: "Signalling: yearly update of China's belief per unit of US restrictiveness. Zero is the no-signalling case."}
+  - {name: prog_eta, group: Beliefs and response, value: 0.10, low: 0.02, high: 0.3, units: 1/yr, status: illustrative, factor: [ai_decisive, 0.3], def: "Yearly update of China's belief from observed proximity to a transition."}
+  - {name: rd_h, group: Beliefs and response, value: 0.8, low: 0.0, high: 1.5, units: effort per index, status: illustrative, def: "Response of Chinese R&D and subsidy effort to supply insecurity."}
+  - {name: rd_b, group: Beliefs and response, value: 1.0, low: 0.0, high: 2.0, units: effort per index, status: illustrative, def: "Response of Chinese R&D and subsidy effort to the belief that AI is decisive."}
+  - {name: m_base, group: Beliefs and response, value: 0.6, low: 0.3, high: 0.9, units: index, status: illustrative, ui: true, def: "Baseline strength of China's procurement mandate for domestic chips."}
+  - {name: m_h, group: Beliefs and response, value: 0.3, low: 0.0, high: 0.6, units: index per index, status: illustrative, def: "Response of the mandate to supply insecurity."}
+  - {name: ret_R, group: Beliefs and response, value: 0.3, low: 0.0, high: 0.6, units: index per index, status: illustrative, def: "Standing retaliation per unit of US restrictiveness."}
+  - {name: ret_dR, group: Beliefs and response, value: 2.0, low: 0.0, high: 4.0, units: index per index, status: illustrative, def: "Retaliation in response to new tightening."}
+  - {name: fa_R, group: Beliefs and response, value: 1.0, low: 0.5, high: 1.0, units: index per index, status: illustrative, def: "Evasion effort (smuggling, shell buyers) per unit of restrictiveness."}
+  - {name: obs_noise, group: Beliefs and response, value: 0.3, low: 0.0, high: 1.0, units: years, status: illustrative, def: "Noise in the US reading of the capability lead, used by the adaptive policy."}
+  # ---------------------------------------------------------------- Power
+  - {name: pow_slack_us0, group: Power, value: 1.25, low: 1.05, high: 1.6, units: multiple, status: illustrative, def: "US datacentre power available in 2026 relative to what its hardware needs."}
+  - {name: pow_slack_cn0, group: Power, value: 2.5, low: 1.5, high: 4.0, units: multiple, status: estimated, src: "semianalysis_power,iea_energy_ai", def: "Chinese datacentre power available in 2026 relative to what its hardware needs."}
+  - {name: g_e_us, group: Power, value: 0.38, low: 0.15, high: 0.5, units: log/yr, status: illustrative, ui: true, def: "Growth of usable US datacentre power."}
+  - {name: g_e_cn, group: Power, value: 0.45, low: 0.3, high: 0.6, units: log/yr, status: illustrative, def: "Growth of usable Chinese datacentre power."}
+  - {name: ppw_share, group: Power, value: 0.35, low: 0.2, high: 0.5, units: share, status: illustrative, def: "Share of output growth that comes from performance per watt."}
+  # ---------------------------------------------------------------- Capability
+  - {name: alpha_T, group: Capability, value: 0.3, low: 0.15, high: 0.6, units: nats per log, status: estimated, src: "ifp_lead", ui: true, def: "Capability gained per log point of training compute. Low values mean algorithms substitute for compute."}
+  - {name: g_alg, group: Capability, value: 0.55, low: 0.3, high: 0.9, units: nats/yr, status: illustrative, def: "Algorithmic progress at the frontier, in capability units."}
+  - {name: theta_exp, group: Capability, value: 0.3, low: 0.0, high: 0.6, units: elasticity, status: illustrative, def: "Dependence of a follower's own algorithmic progress on its relative compute."}
+  - {name: diff_rate, group: Capability, value: 0.5, low: 0.2, high: 1.0, units: 1/yr, status: illustrative, ui: true, def: "Rate at which an algorithmic gap closes through diffusion."}
+  - {name: diff_open, group: Capability, value: 0.5, low: 0.0, high: 1.0, units: multiple, status: illustrative, def: "Extra diffusion speed when open models are near the frontier."}
+  - {name: lag0, group: Capability, value: 0.58, low: 0.4, high: 0.9, units: years, status: estimated, src: "epoch_china_lag,ifp_lead", def: "Capability lag of Chinese behind US frontier models in 2026. China's 2026 algorithmic index is set to reproduce it, and that index is treated as a steady state at the 2026 compute ratio."}
+  - {name: follow_floor, group: Capability, value: 0.10, low: 0.0, high: 0.4, units: nats, status: illustrative, ui: true, def: "Closest a follower can get to the leader on borrowed efficiency (imitation, distillation, published research)."}
+  - {name: intrinsic_gap, group: Capability, value: 0.10, low: -0.2, high: 0.4, units: nats, status: illustrative, ui: true, def: "US lead in own algorithmic efficiency once borrowed efficiency is set aside. China can lead only if its compute overcomes this gap."}
+  - {name: cn_spill, group: Capability, value: 0.10, low: 0.0, high: 0.3, units: multiple, status: illustrative, ui: true, def: "Boost to frontier algorithmic progress from Chinese research, scaled by China's relative compute and the openness of its releases."}
+  - {name: sigma_alg, group: Capability, value: 0.12, low: 0.05, high: 0.25, units: nats, status: illustrative, def: "Yearly standard deviation of algorithmic shocks."}
+  - {name: acc_scale, group: Capability, value: 1.5, low: 0.7, high: 3.0, units: nats, status: illustrative, def: "How quickly post-transition growth falls off for an economy whose available AI is below the transformative threshold."}
+  # ---------------------------------------------------------------- Openness
+  - {name: open_gap_us, group: Openness, value: 0.35, low: 0.15, high: 1.2, units: nats, status: estimated, src: "epoch_open_gap", ui: true, def: "Gap between US-origin open models and the US closed frontier."}
+  - {name: open_sigma, group: Openness, value: 0.25, low: 0.1, high: 0.5, units: nats, status: illustrative, def: "Spread across worlds in the US open-model gap."}
+  - {name: open_lag_cn, group: Openness, value: 0.10, low: 0.0, high: 0.4, units: nats, status: illustrative, def: "Gap between Chinese open releases and the Chinese frontier."}
+  - {name: open_lag_T, group: Openness, value: 0.5, low: 0.0, high: 1.5, units: nats per index, status: illustrative, def: "Widening of the Chinese open-release gap as tension rises above its 2026 level."}
+  - {name: open_lag_b, group: Openness, value: 0.5, low: 0.0, high: 2.0, units: nats per index, status: illustrative, ui: true, def: "Widening of the Chinese open-release gap as China's belief that AI is decisive rises above its 2026 level."}
+  - {name: open_scale, group: Openness, value: 0.6, low: 0.3, high: 1.2, units: nats, status: illustrative, def: "Gap at which an open model's competitive pressure falls to 37%."}
+  - {name: markup_max, group: Openness, value: 0.5, low: 0.2, high: 0.8, units: share, status: illustrative, def: "Closed-provider markup when no competitive open model exists."}
+  - {name: spend_share, group: Openness, value: 0.3, low: 0.1, high: 0.5, units: share, status: illustrative, def: "Share of AI-driven output paid to model providers."}
+  - {name: open_boost, group: Openness, value: 0.15, low: 0.0, high: 0.4, units: multiple, status: illustrative, ui: true, def: "Extra useful-AI output from open access (downstream building, customisation, independent use)."}
+  - {name: dist_gap, group: Openness, value: 0.2, low: 0.05, high: 0.5, units: nats, status: illustrative, def: "Gap between open models and the leader at arrival at which the chance of a distributed frontier falls to 37%."}
+  # ---------------------------------------------------------------- Transition
+  - {name: p_tai_2035, group: Transition, value: 0.60, low: 0.30, high: 0.90, units: probability, status: illustrative, ui: true, factor: [ai_decisive, 0.4], def: "Probability of transformative AI by 2035 under the reference policy. A calibration target that pins the capability threshold."}
+  - {name: p_no_threshold, group: Transition, value: 0.10, low: 0.0, high: 0.3, units: probability, status: illustrative, def: "Probability that progress stays continuous with no sharp threshold."}
+  - {name: theta_sigma, group: Transition, value: 0.5, low: 0.3, high: 0.8, units: log sd, status: illustrative, def: "Uncertainty about the capability threshold."}
+  - {name: p_high_dec, group: Transition, value: 0.30, low: 0.05, high: 0.70, units: probability, status: illustrative, ui: true, factor: [ai_decisive, 0.6], def: "Probability that the world is one of high strategic decisiveness (a world type, fixed across policies)."}
+  - {name: dec_persist_corr, group: Transition, value: 0.5, units: correlation, status: illustrative, def: "Correlation between decisiveness and persistence of advantage."}
+  - {name: persist_sigma, group: Transition, value: 1.0, units: log sd, status: illustrative, def: "Spread of the advantage half-life."}
+  - {name: p_persist10, group: Transition, value: 0.40, low: 0.10, high: 0.80, units: probability, status: illustrative, ui: true, factor: [ai_decisive, 0.6], def: "Probability that a first-mover advantage has a half-life of at least ten years."}
+  - {name: lead_conv, group: Transition, value: 1.0, low: 0.3, high: 3.0, units: years, status: illustrative, ui: true, def: "Lead needed to convert about 63% of a decisive advantage into durable capture."}
+  - {name: open_erode, group: Transition, value: 0.5, low: 0.0, high: 0.9, units: share, status: illustrative, def: "Reduction in capture when open models are at the frontier."}
+  - {name: sim_window, group: Transition, value: 0.5, low: 0.25, high: 1.0, units: years, status: illustrative, def: "Leads shorter than this count as near-simultaneous arrival."}
+  - {name: tai_growth, group: Transition, value: 0.08, low: 0.02, high: 0.30, units: 1/yr, status: illustrative, ui: true, factor: [ai_decisive, 0.5], def: "Extra output growth after a transition for an economy with frontier access."}
+  - {name: contest_share, group: Transition, value: 0.30, low: 0.05, high: 0.60, units: share, status: illustrative, ui: true, factor: [ai_decisive, 0.4], def: "Share of others' post-transition AI output that a fully decisive, fully converted leader could capture."}
+  - {name: capture_dwl, group: Transition, value: 0.2, low: 0.0, high: 0.5, units: share, status: illustrative, def: "Share of captured surplus that is destroyed rather than transferred."}
+  - {name: p_adverse_us, group: Transition, value: 0.30, low: 0.1, high: 0.6, units: probability, status: illustrative, ui: true, def: "Probability that a durable US-led order turns out institutionally adverse."}
+  - {name: adverse_cost, group: Transition, value: 0.10, low: 0.0, high: 0.4, units: share of output per yr, status: illustrative, ui: true, def: "Output lost each year by every economy under an institutionally adverse durable order, at full advantage. Set the two adverse-order probabilities equal to remove any assumed difference between US-led and China-led orders."}
+  - {name: p_adverse_cn, group: Transition, value: 0.60, low: 0.3, high: 0.9, units: probability, status: illustrative, ui: true, def: "Probability that a durable China-led order turns out institutionally adverse."}
+  # ---------------------------------------------------------------- Safety
+  - {name: cat_base, group: Safety, value: 0.01, low: 0.001, high: 0.05, units: 1/yr, status: illustrative, ui: true, factor: [ai_decisive, 0.4], def: "Peak annual hazard of an AI catastrophe at the transition with no lead slack and no race."}
+  - {name: cat_window, group: Safety, value: 4, low: 2, high: 8, units: years, status: illustrative, def: "Half-life of the catastrophe hazard after arrival."}
+  - {name: lead_safety, group: Safety, value: 0.30, low: 0.0, high: 0.8, units: share, status: illustrative, ui: true, def: "Largest reduction in catastrophe hazard that a long lead buys (time to test and secure systems)."}
+  - {name: safe_tau, group: Safety, value: 1.5, low: 0.5, high: 3.0, units: years, status: illustrative, def: "Lead at which about 63% of that reduction is reached."}
+  - {name: race_risk, group: Safety, value: 0.5, low: 0.0, high: 1.5, units: multiple, status: illustrative, def: "Extra hazard from a close race under tension."}
+  - {name: cat_mult_cn, group: Safety, value: 1.0, low: 0.5, high: 3.0, units: multiple, status: illustrative, def: "Hazard multiplier when China leads. One means neither nationality is assumed safer."}
+  - {name: open_risk, group: Safety, value: 0.0, low: -0.3, high: 0.5, units: multiple, status: illustrative, def: "Change in hazard per unit of openness (either sign)."}
+  - {name: cat_severity, group: Safety, value: 0.30, low: 0.05, high: 1.0, units: share of output, status: illustrative, ui: true, def: "Permanent loss of world output if a catastrophe occurs. A scenario-conditional normative choice."}
+  # ---------------------------------------------------------------- Geopolitics
+  - {name: T0, group: Geopolitics, value: 0.5, units: index, status: illustrative, def: "US-China tension in 2026."}
+  - {name: t_floor, group: Geopolitics, value: 0.25, low: 0.1, high: 0.4, units: index, status: illustrative, def: "Tension that would persist with no export controls."}
+  - {name: t_R, group: Geopolitics, value: 0.30, low: 0.1, high: 0.5, units: index per index, status: illustrative, def: "Tension added per unit of US restrictiveness."}
+  - {name: t_ret, group: Geopolitics, value: 0.20, low: 0.0, high: 0.5, units: index per index, status: illustrative, def: "Tension added per unit of Chinese retaliation."}
+  - {name: t_adj, group: Geopolitics, value: 0.3, low: 0.1, high: 0.6, units: 1/yr, status: illustrative, def: "Adjustment speed of tension."}
+  - {name: I0, group: Geopolitics, value: 0.45, units: index, status: illustrative, def: "US-China technology interdependence in 2026."}
+  - {name: i_max, group: Geopolitics, value: 0.8, low: 0.6, high: 1.0, units: index, status: illustrative, def: "Interdependence with no export controls."}
+  - {name: i_R, group: Geopolitics, value: 0.55, low: 0.3, high: 0.8, units: share, status: illustrative, def: "Share of interdependence lost at full restrictiveness."}
+  - {name: i_adj, group: Geopolitics, value: 0.2, low: 0.1, high: 0.4, units: 1/yr, status: illustrative, def: "Adjustment speed of interdependence."}
+  - {name: dep_tw0, group: Geopolitics, value: 0.90, low: 0.75, high: 0.95, units: share, status: illustrative, def: "US dependence on Taiwanese leading-edge fabrication in 2026."}
+  - {name: dep_tw_decay, group: Geopolitics, value: 0.03, low: 0.01, high: 0.06, units: 1/yr, status: illustrative, def: "Rate at which that dependence falls."}
+  - {name: war_base_2040, group: Geopolitics, value: 0.10, low: 0.03, high: 0.25, units: probability, status: illustrative, ui: true, def: "Cumulative probability of a first great-power war by 2040 under the reference policy. A calibration target that pins the baseline hazard, where China's political claim on Taiwan belongs."}
+  - {name: th_T, group: Geopolitics, value: 0.3, low: 0.0, high: 1.0, units: logit per index, status: illustrative, ui: true, def: "Provocation channel: war logit per unit of tension above its 2026 level."}
+  - {name: th_sdi, group: Geopolitics, value: 0.3, low: 0.0, high: 1.5, units: logit per index, status: illustrative, ui: true, factor: [ai_decisive, 0.3], def: "Strategic-denial channel: war logit per unit of China's incentive to deny the US Taiwanese chips."}
+  - {name: th_det, group: Geopolitics, value: 0.5, low: 0.0, high: 1.5, units: logit per index, status: illustrative, ui: true, def: "Deterrence channel: reduction in war logit from a US capability lead."}
+  - {name: det_tau, group: Geopolitics, value: 2.0, low: 1.0, high: 4.0, units: years, status: illustrative, def: "Lead at which deterrence and the military edge reach about 76% of their maximum."}
+  - {name: th_I, group: Geopolitics, value: 0.2, low: 0.0, high: 0.8, units: logit per index, status: illustrative, ui: true, def: "Interdependence channel: reduction in war logit per unit of interdependence above its 2026 level."}
+  - {name: th_tw_sd, group: Geopolitics, value: 0.8, low: 0.3, high: 1.5, units: logit sd, status: illustrative, def: "Spread across worlds in baseline conflict propensity."}
+  - {name: th_ar_sd, group: Geopolitics, value: 0.5, low: 0.2, high: 1.0, units: logit sd, status: illustrative, def: "Yearly crisis shocks to the war logit."}
+  - {name: war_p_deny, group: Geopolitics, value: 0.55, low: 0.3, high: 0.8, units: probability, status: illustrative, def: "Given war, probability that it denies the US access to Taiwanese fabs (blockade or strike)."}
+  - {name: war_p_capture, group: Geopolitics, value: 0.05, low: 0.0, high: 0.15, units: probability, status: illustrative, def: "Given war, probability that China captures operating fabs."}
+  - {name: war_years, group: Geopolitics, value: 3, low: 1, high: 6, units: years, status: illustrative, def: "Years over which war losses are incurred."}
+  - {name: war_cost_us, group: Geopolitics, value: 0.032, low: 0.015, high: 0.08, units: share of output per yr, status: estimated, src: "bloomberg_taiwan", def: "US output loss per year of a denial-type war."}
+  - {name: war_cost_cn, group: Geopolitics, value: 0.089, low: 0.04, high: 0.18, units: share of output per yr, status: estimated, src: "bloomberg_taiwan", def: "Chinese output loss per year of a denial-type war."}
+  - {name: war_cost_row, group: Geopolitics, value: 0.055, low: 0.025, high: 0.11, units: share of output per yr, status: estimated, src: "bloomberg_taiwan", def: "Rest-of-world output loss per year of a denial-type war."}
+  - {name: war_fab_loss, group: Geopolitics, value: 0.8, low: 0.5, high: 1.0, units: share, status: illustrative, def: "Share of Taiwan-dependent Western output lost at the start of a denial or capture war."}
+  - {name: fab_recovery, group: Geopolitics, value: 5, low: 3, high: 10, units: years, status: illustrative, def: "Years for lost fabrication to be replaced."}
+  - {name: capture_yield, group: Geopolitics, value: 0.15, low: 0.0, high: 0.4, units: share, status: illustrative, def: "Share of Taiwan-dependent output China can operate two years after a capture."}
+  - {name: war_escal, group: Geopolitics, value: 0.05, low: 0.01, high: 0.15, units: probability, status: illustrative, def: "Probability that a war escalates to a lasting catastrophe."}
+  - {name: escal_severity, group: Geopolitics, value: 0.15, low: 0.05, high: 0.5, units: share of output, status: illustrative, def: "Permanent loss of world output after such an escalation."}
+  # ---------------------------------------------------------------- Economy and payoffs
+  - {name: gdp_us0, group: Economy, value: 32.6, units: $tn, status: estimated, src: "imf_weo", def: "US nominal GDP, 2026."}
+  - {name: gdp_cn0, group: Economy, value: 21.6, units: $tn, status: estimated, src: "imf_weo", def: "Chinese nominal GDP, 2026."}
+  - {name: gdp_row0, group: Economy, value: 73.8, units: $tn, status: estimated, src: "imf_weo", def: "Rest-of-world nominal GDP, 2026."}
+  - {name: g_us, group: Economy, value: 0.02, units: 1/yr, status: illustrative, def: "US baseline real growth without AI."}
+  - {name: g_cn, group: Economy, value: 0.035, units: 1/yr, status: illustrative, def: "Chinese baseline real growth without AI."}
+  - {name: g_row, group: Economy, value: 0.03, units: 1/yr, status: illustrative, def: "Rest-of-world baseline real growth without AI."}
+  - {name: discount_rate, group: Economy, value: 0.03, low: 0.01, high: 0.05, units: 1/yr, status: illustrative, ui: true, def: "Annual discount rate applied to every payoff component."}
+  - {name: terminal_years, group: Economy, value: 25, low: 0, high: 50, units: years, status: illustrative, ui: true, def: "Years after 2050 included through the terminal value. Zero switches it off."}
+  - {name: terminal_persist, group: Economy, value: 0.92, low: 0.8, high: 1.0, units: 1/yr, status: illustrative, def: "Yearly persistence of 2050 payoff flows in the terminal value."}
+  - {name: uplift_max, group: Economy, value: 0.25, low: 0.1, high: 0.5, units: share of GDP, status: illustrative, ui: true, def: "Largest pre-transition GDP uplift from useful AI."}
+  - {name: uplift_scale, group: Economy, value: 12, low: 6, high: 20, units: nats, status: illustrative, def: "Growth in the useful-AI index at which 63% of that uplift is reached."}
+  - {name: cap_w, group: Economy, value: 1.0, units: weight, status: illustrative, def: "Weight of available capability in the useful-AI index."}
+  - {name: inf_w, group: Economy, value: 0.5, low: 0.2, high: 1.0, units: weight, status: illustrative, def: "Weight of inference compute in the useful-AI index."}
+  - {name: sci_spill, group: Economy, value: 0.10, low: 0.0, high: 0.3, units: share, status: illustrative, ui: true, def: "Share of other economies' AI-driven output that spills over to an economy in proportion to its size (non-rival ideas)."}
+  - {name: w_rev0, group: Economy, value: 0.45, low: 0.3, high: 0.6, units: $tn/yr, status: illustrative, def: "Revenue of Western accelerator makers in 2026."}
+  - {name: chip_margin, group: Economy, value: 0.6, low: 0.4, high: 0.75, units: share, status: illustrative, def: "Profit margin on accelerator sales."}
+  - {name: us_capture, group: Economy, value: 0.8, low: 0.6, high: 0.9, units: share, status: illustrative, def: "Share of that profit accruing to US firms."}
+  - {name: cn_export_share, group: Economy, value: 0.5, low: 0.0, high: 1.0, units: share, status: illustrative, def: "Share of Chinese chip capacity beyond domestic demand that is exported."}
+  - {name: cn_export_disp, group: Economy, value: 0.5, low: 0.0, high: 1.0, units: share, status: illustrative, def: "Share of those exports that displaces Western chip sales."}
+  - {name: ret_cost, group: Economy, value: 0.004, low: 0.001, high: 0.01, units: share of GDP, status: illustrative, def: "US cost of full Chinese retaliation."}
+  - {name: tens_cost, group: Economy, value: 0.004, low: 0.001, high: 0.01, units: share of GDP per index, status: illustrative, def: "Cost of decoupling and mistrust per unit of tension above its no-controls level."}
+  - {name: sub_cost, group: Economy, value: 0.004, low: 0.001, high: 0.01, units: share of GDP per effort, status: illustrative, def: "Chinese fiscal cost per unit of R&D and subsidy effort above baseline."}
+  - {name: pre_sec, group: Economy, value: 0.2, low: 0.0, high: 0.5, units: index, status: illustrative, def: "Pre-transition security value of a full capability edge."}
+  - {name: lib_open, group: Economy, value: 0.5, units: weight, status: illustrative, def: "Weight of openness in the liberty index."}
+  - {name: lib_plural, group: Economy, value: 0.5, units: weight, status: illustrative, def: "Weight of the absence of durable concentration in the liberty index."}
+  - {name: lib_adverse, group: Economy, value: 1.0, units: weight, status: illustrative, def: "Penalty in the liberty index for an institutionally adverse durable lead."}

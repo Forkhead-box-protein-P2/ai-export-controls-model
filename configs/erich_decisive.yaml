@@ -1,0 +1,56 @@
+# Decisive / lock-in worldview, closer to Erich Grunewald's stated expectation.
+#
+# Only two numbers here are his own stated forecasts: a US compute advantage of roughly
+# 10x or more over the next decade and 2x or more through the 2040s under continued
+# controls. Those are forecasts, not observations, and in this model they are outputs:
+# the industrial parameters below are chosen so that the Maintain path reproduces them
+# (see the calibration report). He also said decisive worlds are more likely than
+# non-decisive ones, which is represented as p_high_dec above one half. Every other value
+# is an illustrative operationalisation of a qualitative position, not his prior.
+extends: baseline.yaml
+meta:
+  label: Decisive / lock-in
+  description: >-
+    Transformative AI is fairly near and often gives a large, lasting advantage to
+    whoever leads. Controls sustain a large compute lead, Beijing secures a captive
+    market for domestic chips with or without imports, and a lead buys safety.
+    An illustrative operationalisation; only the compute-lead forecasts are his own.
+sampling: listed
+overrides:
+  # Transition: decisive worlds are more likely than not, and advantages last.
+  p_no_threshold: 0.05
+  p_high_dec: {value: 0.60, low: 0.50, high: 0.75}
+  p_persist10: {value: 0.65, low: 0.45, high: 0.80}
+  lead_conv: 0.7
+  contest_share: 0.4
+  tai_growth: 0.12
+  # Safety: mishandled development could be catastrophic, and a lead buys room to test.
+  cat_base: 0.02
+  cat_severity: 0.6
+  lead_safety: 0.5
+  # Compute lead: slow indigenous equipment and capacity growth, so the Maintain path
+  # holds roughly 10x or more for a decade and 2x or more through the 2040s; China's
+  # appetite for imported compute is large, so easing shrinks the gap a lot.
+  g_cap_max: 0.42
+  g_hbm_max: 1.2
+  k_sme0: 0.25
+  rd_sme: 0.012
+  learn_sme: 0.02
+  rd_logic: 0.025
+  learn_logic: 0.03
+  demand_share: 0.34
+  # Captive market regardless of controls; past controls' effect is close to irreversible.
+  mandate_erosion: 0.05
+  m_base: 0.85
+  pref_dq: 0.5
+  lab_sens: 0.2
+  rev_rd: 0.2
+  util_pull: 0.2
+  h_down: 0.03
+  # Beijing is less focused on AGI than Washington; deterrence holds.
+  b_cn0: 0.2
+  sig_eta: 0.02
+  th_det: 0.9
+  th_sdi: 0.2
+  th_T: 0.2
+  alpha_T: 0.4

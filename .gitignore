@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+dist/
+build/
+*.log
+# Generated results live outside the repository.
+/outputs
+# Private working brief; not part of the public project.
+/handoff/
+/.claude/
+/src/*.egg-info/

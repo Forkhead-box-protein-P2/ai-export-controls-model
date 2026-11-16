@@ -1,0 +1,13 @@
+# Agnostic, wide uncertainty: every parameter with a range is drawn per simulated world.
+# Parameters that share a factor (china_industry, ai_decisive, captive) are drawn with
+# the correlations stated in baseline.yaml, so that, for example, worlds with strong
+# Chinese equipment progress also tend to have strong capacity growth.
+extends: baseline.yaml
+meta:
+  label: Agnostic / wide
+  description: >-
+    Central values from the baseline with every uncertain parameter drawn from its full
+    range, world by world, with correlated draws within the industrial, decisiveness and
+    captive-market clusters.
+sampling: all
+overrides: {}

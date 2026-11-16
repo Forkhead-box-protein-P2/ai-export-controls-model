@@ -1,0 +1,31 @@
+# Extreme but coherent counterfactuals. Each scenario is a set of overrides on the
+# baseline; `ai-controls stress` runs them and tests/test_policy_effects.py checks that
+# the model can produce effects of either sign.
+extends: baseline.yaml
+meta:
+  label: Stress tests
+  description: Extreme but coherent counterfactuals used to check that the model can produce effects of either sign.
+sampling: none
+overrides: {}
+scenarios:
+  controls_build_china:
+    label: Controls build Chinese capability and raise conflict risk (both positive)
+    overrides: {mandate_erosion: 0.9, pref_dq: 2.5, lab_sens: 1.0, learn_soft: 0.2, learn_logic: 0.12, learn_sme: 0.1, rev_rd: 1.5, util_pull: 1.0, rd_h: 1.5, h_down: 0.3, spill_k: 0.0, rd_tool_dep: 0.2, th_sdi: 1.5, th_T: 1.0, th_det: 0.0}
+  controls_hold_china_back:
+    label: Controls hold Chinese capability back and lower conflict risk (both negative)
+    overrides: {mandate_erosion: 0.0, m_base: 0.9, pref_dq: 0.3, lab_sens: 0.0, learn_soft: 0.02, learn_sme: 0.0, rev_rd: 0.0, util_pull: 0.0, rd_h: 0.0, m_h: 0.0, spill_k: 0.06, rd_tool_dep: 0.8, eta_sme: 2.0, th_det: 1.5, th_sdi: 0.0, th_T: 0.0, th_I: 0.0}
+  arrival_without_lock_in:
+    label: Transformative AI arrives with no durable lock-in
+    overrides: {p_tai_2035: 0.9, p_no_threshold: 0.0, p_high_dec: 0.0, p_persist10: 0.1, open_erode: 0.9}
+  china_ahead_in_algorithms:
+    label: China leads in algorithms and can arrive first
+    overrides: {intrinsic_gap: -0.6, follow_floor: 0.0, alpha_T: 0.15, lag0: 0.4}
+  us_power_binds:
+    label: US datacentre power is the binding constraint
+    overrides: {g_e_us: 0.15, pow_slack_us0: 1.05}
+  no_signalling:
+    label: US controls carry no signal about AI's importance
+    overrides: {sig_eta: 0.0}
+  high_signalling:
+    label: US controls strongly signal that AI is decisive
+    overrides: {sig_eta: 0.2, th_sdi: 1.0}

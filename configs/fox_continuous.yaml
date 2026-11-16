@@ -1,0 +1,52 @@
+# Continuous / diffusive worldview, closer to fox's starting intuition.
+#
+# These numbers are an illustrative operationalisation of a qualitative position. They are
+# NOT fox's elicited priors: no exact probabilities have been elicited from fox. Edit them
+# freely; `overrides` lists every departure from baseline.yaml.
+extends: baseline.yaml
+meta:
+  label: Continuous / diffusive
+  description: >-
+    Sharp advances are possible, but competition, diffusion and institution-building
+    continue and leads usually decay. A captive market matters for Chinese learning,
+    several margins substitute for raw compute, and open models carry real value.
+    An illustrative operationalisation, not elicited priors.
+sampling: listed
+overrides:
+  # Transition: arrival is as likely as in the baseline, but decisiveness and lock-in are weaker.
+  p_no_threshold: 0.25
+  p_high_dec: {value: 0.12, low: 0.05, high: 0.25}
+  p_persist10: {value: 0.20, low: 0.10, high: 0.35}
+  lead_conv: 2.0
+  open_erode: 0.7
+  contest_share: 0.2
+  # Captive market: mandates lose force when better imports are on offer, buyers are
+  # quality-sensitive, and learning depends on who actually runs on domestic chips.
+  mandate_erosion: {value: 0.7, low: 0.5, high: 0.9}
+  pref_dq: {value: 1.8, low: 1.2, high: 2.5}
+  lab_sens: 0.8
+  learn_soft: 0.12
+  learn_logic: 0.07
+  learn_sme: 0.06
+  rev_rd: 1.0
+  util_pull: 1.0
+  rd_h: 1.2
+  h_down: 0.2
+  # Substitution across the stack: compute is one margin among several.
+  alpha_T: 0.22
+  diff_rate: 0.7
+  usab_min: 0.6
+  # Openness: US-origin open models trail further, so Chinese releases carry more of the
+  # competitive pressure; open access is worth more downstream.
+  open_gap_us: 0.9
+  open_boost: 0.3
+  open_lag_b: 0.2
+  markup_max: 0.6
+  # Conflict: a modest destabilising margin, with real costs of tension short of war.
+  th_sdi: 0.6
+  th_T: 0.5
+  th_det: 0.3
+  sig_eta: 0.1
+  tens_cost: 0.006
+  # Safety: a lead buys less.
+  lead_safety: 0.15
