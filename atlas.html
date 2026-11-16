@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Trace US chip policy through Chinese sourcing decisions, compute growth and possible AI futures in an interactive strategic model.">
+<meta name="theme-color" content="#112c30">
+<title>The export controls game · Policy Atlas</title>
+<link rel="stylesheet" href="web/atlas.css?v=1">
+<script defer src="web/atlas_params.js?v=1"></script>
+<script defer src="web/model.js?v=atlas1"></script>
+<script defer src="web/atlas_ui.js?v=1"></script>
+</head>
+<body>
+<a class="skip" href="#game">Skip to game map</a>
+<header class="mast"><div class="frame mast-inner">
+  <a href="#top" class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h7c6 0 6-10 13-10h4M11 16h17M11 16c6 0 6 10 13 10h4"/><circle cx="4" cy="16" r="2.5"/><circle cx="27" cy="6" r="2"/><circle cx="27" cy="16" r="2"/><circle cx="27" cy="26" r="2"/></svg>Policy Atlas</a>
+  <nav aria-label="On this page"><a href="#game">Game map</a><a href="#paths">Trajectories</a><a href="#values">Policy values</a><a href="#methods">Methods</a></nav>
+  <a class="sibling" href="./">Claude’s model <span aria-hidden="true">↗</span></a>
+</div></header>
+<main id="top" class="frame">
+  <div class="intro"><div><div class="eyebrow"><span class="dash"></span> US–China <span class="dot">/</span> Strategic policy model</div>
+    <h1>The export controls <em>game</em></h1>
+    <p>Follow a US chip policy through China’s response to the AI frontier. Change the assumptions to see when the trade-off reverses.</p>
+  </div><div class="horizon"><label for="year">View through <output id="yearValue" for="year">2040</output></label><input type="range" id="year" min="2026" max="2050" value="2040" step="1"><div class="bounds"><span>2026</span><span>2050</span></div></div></div>
+
+  <section id="game" class="board" aria-labelledby="mapHeading">
+    <div class="board-head"><div><div class="eyebrow"><i class="live-dot"></i> Interactive game map</div>
+      <h2 id="mapHeading">From policy to outcome</h2></div>
+      <label class="board-select">World assumptions <span class="select-wrap"><select id="scenario"></select></span></label></div>
+    <div class="network" id="network">
+      <svg id="wires" aria-hidden="true"></svg>
+      <div class="stage policy-stage"><h3><span class="stage-mark square"></span>US policy</h3><div id="policies" class="nodes"></div></div>
+      <div class="stage response-stage"><h3><span class="stage-mark diamond"></span>China’s response</h3><div id="responses" class="nodes"></div></div>
+      <div class="stage outcome-stage"><h3><span class="stage-mark circle"></span>AI outcome</h3><div id="outcomes" class="nodes"></div></div>
+    </div>
+    <div class="board-foot"><div class="inspector"><span class="inspect-mark" aria-hidden="true">↳</span><div id="nodeDetail" aria-live="polite"></div></div>
+      <button id="allPaths" type="button" hidden>Show all responses ×</button></div>
+    <details class="mechanics"><summary>Trace the industrial and AI mechanisms</summary>
+      <div class="mechanics-content"><p id="mechanicsScope"></p><div id="mechanicsGrid"></div><p id="riskChannels"></p></div>
+    </details>
+  </section>
+  <div class="map-key"><span class="key-line" aria-hidden="true"></span> Wider paths carry more probability. Select a node to inspect it. <span class="assumption-tag">Illustrative assumptions</span></div>
+  <div class="risk-strip"><div><h3>Risks along these paths</h3><p>Either event can occur in any AI outcome.</p></div><div><span>Great-power conflict</span><strong id="warRisk"></strong></div><div><span>AI catastrophe</span><strong id="catRisk"></strong></div><div><span>By end of year</span><strong id="riskYear"></strong></div></div>
+  <details class="tuner" id="tuner"><summary>Adjust policy and world assumptions <span class="summary-note">Model controls</span></summary>
+    <div class="tuner-body"><div><h3>US restrictions</h3><p id="policyTuneLabel"></p><div id="policyKnobs"></div></div>
+    <div><h3>World assumptions</h3><p>Change one mechanism across every policy.</p><div id="worldKnobs"></div></div></div>
+    <button class="text-btn" id="reset" type="button">Restore model defaults ↺</button>
+  </details>
+
+  <section id="paths" class="section"><div class="section-head"><div><div class="eyebrow"><span class="dash"></span> Technology paths</div><h2>What changes over time?</h2><p>Compare two policies from the same 2026 starting stocks and industrial environments.</p></div>
+    <label>Compare against <span class="select-wrap"><select id="reference"></select></span></label></div>
+    <div class="chart-panel"><div class="chart-head"><label class="chart-select"><span class="sr">Trajectory metric</span><span class="select-wrap"><select id="metric"></select></span></label><div class="chart-legend"><span><i></i><b id="legendPolicy"></b></span><span><i class="ref"></i><b id="legendRef"></b></span></div></div>
+      <div id="chart"></div><div class="chart-foot"><span id="metricNote"></span><span id="chartReadout"></span></div></div>
+  </section>
+
+  <section id="values" class="section"><div class="section-head"><div><div class="eyebrow"><span class="dash"></span> Decision analysis</div><h2>Which policy pays?</h2><p>Rank the six policies by discounted value, then inspect the difference from the comparison policy.</p></div>
+    <label>Value weights <span class="select-wrap"><select id="lens"></select></span></label></div>
+    <div class="value-grid"><div class="card"><h3>Policy ranking</h3><p id="rankNote"></p><div id="ranking"></div></div>
+      <div class="card"><h3>Where the difference comes from</h3><p id="deltaNote"></p><div id="decomposition"></div></div></div>
+    <div class="card crux"><div><div class="eyebrow"><span class="dash"></span> Sensitivity</div><h3>What would flip the choice?</h3><p id="breakEven" aria-live="polite"></p><div id="leadInput"></div><p class="small">Each cell compares the selected pair. Choose a cell to apply its assumptions.</p><div class="heat-key"><i></i> Selected policy higher <i></i> Comparison higher</div></div>
+      <div class="heat-box" id="heat"></div></div>
+  </section>
+
+  <section id="methods" class="section methods"><div class="eyebrow"><span class="dash"></span> Model notes</div><h2>How the game works</h2>
+    <p>This independent Codex model integrates a finite set of possible paths. Its probabilities and welfare points express the assumptions you choose.</p>
+    <details><summary>Players, timing and information</summary><p>In 2026 the US commits to a licensing rule. China evaluates three sourcing strategies over four years, weighing accessible compute, domestic know-how and security against investment and diversion costs. A softmax rule gives higher-scoring strategies more probability. Firms then procure and learn each year through 2050. The adaptive US rule responds to last year’s relative capability. Each side uses its own decision rule. This is a scenario comparison with bounded planning.</p></details>
+    <details><summary>Compute, learning and transition</summary><p>Equipment and memory restrict chip output through the tighter bottleneck. Buyers choose domestic deployment according to availability, quality and mandates. Retired chips leave the stock. Cloud rentals transfer services across borders for one year. Domestic production and actual use add fresh learning experience. Each year, frontier capability changes the chance of a first transformative advance. Exclusivity, initial durability and subsequent decay determine where its probability flows.</p></details>
+    <details><summary>Risk, values and what the model leaves open</summary><p>Conflict starts from an annual baseline. Restrictions raise tension and can strengthen deterrence. Catastrophe risk depends on competitive closeness and transition probability. Each event is charged once at first incidence. The model prices both risks while continuing the technology paths. It omits wartime destruction, irreversible catastrophe feedback and any payoff after the selected horizon.</p><p>Annual value combines US and Chinese economic surplus, third-country spillovers, open access, strategic discretion and the two risk costs. The discount rate is 3% from 2026. The lead weight can favor either country. Industrial worlds have fixed weights of 25%, 50% and 25%. All numerical inputs are illustrative.</p><div id="weightsTable"></div></details>
+    <details><summary>Evidence, equations and reproduction</summary><p>The December 2024 BIS package motivates separate memory and equipment levers. DeepSeek’s V3 technical report motivates separating installed hardware from usable training compute. Neither source estimates the coefficients used here. <a href="https://www.bis.gov/press-release/commerce-strengthens-export-controls-restrict-chinas-capability-produce-advanced-semiconductors-military">BIS announcement ↗</a> · <a href="https://arxiv.org/abs/2412.19437">DeepSeek-V3 report ↗</a></p>
+    <p><a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model/blob/main/docs/atlas.md">Equations and reproduction guide ↗</a> · <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model/blob/main/configs/atlas.yaml">All assumptions and coefficients ↗</a></p></details>
+  </section>
+  <noscript><p>Enable JavaScript to run the model and draw the game map. <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model/blob/main/docs/atlas.md">Read the equations and run the Python model.</a></p></noscript>
+</main>
+<footer><div class="frame"><span>Policy Atlas · Codex model</span><a href="./">Claude’s decision model ↗</a><a href="#top">Back to top ↑</a></div></footer>
+</body></html>

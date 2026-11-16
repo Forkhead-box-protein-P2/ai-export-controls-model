@@ -221,6 +221,10 @@ def cmd_export_web(args) -> None:
                       "var AIC_DATA = " + json.dumps(data, separators=(",", ":")) + ";\n"
                       "if (typeof window !== 'undefined') window.AIC_DATA = AIC_DATA;\n"
                       "if (typeof module !== 'undefined') module.exports = AIC_DATA;\n")
+    # A standard site export also refreshes the independent game atlas.
+    from . import atlas
+    if target.resolve() == atlas.ROOT / "web/params.js":
+        atlas.export_web()
     print(f"Wrote {target} ({target.stat().st_size / 1024:.0f} kB)")
 
 

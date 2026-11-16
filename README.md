@@ -1,5 +1,7 @@
 # AI export controls: a strategic game model
 
+[Explore the independent Codex game map](https://forkhead-box-protein-p2.github.io/ai-export-controls-model/atlas.html) to trace six US policies through Chinese sourcing decisions and possible AI outcomes. [Equations and reproduction guide](docs/atlas.md).
+
 A transparent, quantitative and editable model of US restrictions on AI chips, high-bandwidth memory (HBM), semiconductor manufacturing equipment (SME) and cloud compute access to China. It simulates the whole game year by year from 2026 to 2050:
 
 - US policy;

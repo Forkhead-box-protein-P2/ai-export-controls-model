@@ -8,7 +8,7 @@
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require('./params.js'));
-  else root.AICModel = factory(root.AIC_DATA);
+  else if (root.AIC_DATA) root.AICModel = factory(root.AIC_DATA);
 })(typeof self !== 'undefined' ? self : this, function (D) {
   'use strict';
 
@@ -683,4 +683,124 @@
     simulate, runConfig, weightVector, compare, absoluteValue, seriesSummary, seriesMean, outcomeProbs,
     cumulative, warDecomposition, catDecomposition, twoWorldToy, PINDEX, COMPONENTS,
   };
+});
+
+// Independent finite-tree model. This entry point accepts only the Atlas configuration.
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports.atlas = factory();
+  else root.ExportAtlas = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  const unit = x => Math.min(1, Math.max(0, x));
+
+  function trajectory(c, policy, response, world, s) {
+    const p = c.policies[policy], r = c.responses[response];
+    const {industry: i, behavior: b, transition: tr, risk, value: v} = c;
+    let {usStock, localStock: local, importStock: foreign, knowledge: k, experience, ratio} = c.initial;
+    let pending = 1, shared = 0, temporary = 0, usLead = 0, cnLead = 0, war = 0, cat = 0;
+    let planValue = 0;
+    const totals = {}, rows = [];
+    for (let t = 0; t <= c.end - c.start; t++) {
+      const adaptive = policy === 'adaptive' ? unit((ratio - i.adaptiveThreshold) * i.adaptiveSlope) : 0;
+      const chips = (p.chips + (1 - p.chips) * adaptive) * p.enforcement;
+      const cloud = (p.cloud + (1 - p.cloud) * adaptive) * p.enforcement;
+      const equipment = p.tools * p.enforcement, memory = p.hbm * p.enforcement;
+      const supply = i.chipFlow * (1 + i.chipGrowth) ** t;
+      const demand = i.baseDemand + i.mandateDemand * r.mandate + i.scarcityDemand * chips;
+      const fab = i.fabFlow * world.fab * (1 + i.fabGrowth) ** t * k;
+      const output = fab * Math.min(1 - i.equipmentDrag * equipment, 1 - i.memoryDrag * memory);
+      const domestic = Math.min(output, supply * demand * k / (k + i.domesticQuality));
+      const offered = supply * i.exportShare;
+      const permitted = offered * (1 - chips);
+      const imports = Math.min(Math.max(0, offered - domestic * r.mandate),
+        permitted + offered * chips * i.diversionShare * r.bypass);
+      const retain = 1 - i.retirement;
+      usStock = retain * usStock + supply - imports;
+      local = retain * local + domestic;
+      foreign = retain * foreign + imports;
+      const powerGrowth = (1 + i.powerGrowth) ** t;
+      const usPhysical = Math.min(usStock, i.usPower * powerGrowth);
+      const cnPhysical = Math.min(local + foreign, i.cnPower * powerGrowth);
+      const rental = usPhysical * i.cloudShare * (1 - cloud) * r.bypass;
+      const usCompute = usPhysical - rental, cnCompute = cnPhysical + rental;
+      const localUse = cnPhysical ? cnPhysical * local / (local + foreign) : 0;
+      const usTrain = usCompute, cnTrain = cnCompute - localUse * (1 - i.localNetwork) / (1 + k);
+      const usCap = usTrain ** i.computeElasticity, ownCap = cnTrain ** i.computeElasticity;
+      const cnCap = ownCap + world.diffusion * i.openCatchup * Math.max(0, usCap - ownCap);
+      ratio = usCap ? cnCap / usCap : (cnCap ? Infinity : 1);
+      const adoption = domestic + imports ? domestic / (domestic + imports) : 0;
+      const learning = Math.log1p((output + localUse) / (i.experienceScale + experience));
+      const useFraction = output + localUse ? localUse / (output + localUse) : 0;
+      k = k * (1 - i.knowledgeDecay) + i.rdGain * r.investment + learning *
+        (i.fabLearning * (1 - useFraction) + i.useLearning * s.learning * useFraction);
+      experience += output + localUse;
+      const exposure = (chips + equipment + memory + cloud) / 4;
+      const belief = unit(b.strategicBelief + b.signal * exposure);
+      const spend = b.investmentCost * r.investment ** 2 + b.routeCost * r.bypass ** 2;
+      if (t < b.lookahead) {
+        planValue += (Math.log1p(cnCompute) + b.sovereignty * k + b.security * belief * adoption - spend) / b.lookahead;
+      }
+      const frontier = Math.max(usCap, cnCap) / tr.capabilityScale;
+      const hazard = 1 - 0.5 ** (frontier ** tr.progressExponent / s.timing);
+      const arrival = pending * hazard;
+      const exclusive = unit(s.lock * (1 - tr.diffusionDrag * world.diffusion));
+      const durable = arrival * exclusive * tr.durability;
+      const usFirst = 1 / (1 + ratio ** tr.leadershipSensitivity);
+      const retention = 0.5 ** (1 / s.persistence);
+      temporary += (usLead + cnLead) * (1 - retention) + arrival * exclusive * (1 - tr.durability);
+      usLead = usLead * retention + durable * usFirst;
+      cnLead = cnLead * retention + durable * (1 - usFirst);
+      shared += arrival * (1 - exclusive);
+      pending -= arrival;
+
+      const provocation = risk.provocation * exposure * belief * (1 + s.friction);
+      const deterrence = risk.deterrence * exposure * Math.max(0, 1 - ratio) * (1 - s.friction);
+      const warHazard = unit(risk.baselineWar + provocation - deterrence);
+      const closeness = Math.max(usCap, cnCap) ? Math.min(usCap, cnCap) / Math.max(usCap, cnCap) : 0;
+      const catHazard = unit(risk.baselineCat + risk.raceCat * closeness + risk.progressCat * (1 - pending));
+      const newWar = (1 - war) * warHazard, newCat = (1 - cat) * catHazard;
+      war += newWar;
+      cat += newCat;
+      const openness = Math.log1p(cnCap) * world.diffusion / (1 + exposure * belief);
+      const discount = (1 + v.discount) ** -t;
+      const salesShare = supply ? imports / supply : 0;
+      const flows = {
+        usEconomy: Math.log1p(usCap) + v.salesSurplus * salesShare - v.enforcementCost * exposure,
+        cnEconomy: Math.log1p(cnCap) - spend, spillovers: Math.log1p((usCap + cnCap) / 2),
+        openness, lead: v.leadScale * (usLead - cnLead), war: -v.warLoss * newWar, catastrophe: -v.catLoss * newCat,
+      };
+      for (const [key, x] of Object.entries(flows)) totals[key] = (totals[key] || 0) + discount * x;
+      rows.push({...totals, ongoing: pending, shared, transient: temporary, us: usLead, cn: cnLead,
+        warRisk: war, catRisk: cat, warHazard, provocation, deterrence, usStock, cnStock: local + foreign,
+        usCompute, cnCompute, usTrain, cnTrain, usCap, cnCap, adoption, knowledge: k,
+        output, domestic, imports, rental, chips});
+    }
+    return {planValue, rows};
+  }
+
+  function simulate(c, policy, settings) {
+    const branches = [];
+    for (const world of c.worlds) {
+      const paths = Object.keys(c.responses).map(response => ({response, ...trajectory(c, policy, response, world, settings)}));
+      const peak = Math.max(...paths.map(p => p.planValue));
+      const weights = paths.map(p => Math.exp((p.planValue - peak) / c.behavior.temperature));
+      const sum = weights.reduce((a, b) => a + b, 0);
+      paths.forEach((p, j) => branches.push({response: p.response, weight: world.weight * weights[j] / sum, rows: p.rows}));
+    }
+    return branches;
+  }
+
+  function snapshot(branches, t, response = null) {
+    const paths = response ? branches.filter(p => p.response === response) : branches;
+    const mass = paths.reduce((sum, p) => sum + p.weight, 0);
+    const mean = {};
+    for (const p of paths) {
+      for (const [key, value] of Object.entries(p.rows[t])) {
+        mean[key] = (mean[key] || 0) + p.weight * value / mass;
+      }
+    }
+    return mean;
+  }
+
+  return {simulate, snapshot, trajectory};
 });
