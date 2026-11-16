@@ -26,6 +26,7 @@ SERIES = (
     "K_logic", "K_hbm", "K_sme", "K_soft",
     "logA_us", "logA_cn", "lag_years", "O",
     "T", "I", "h_war", "h_cat", "adv_us", "adv_cn",
+    "cat_raw", "cat_cn", "cat_noslack", "cat_norace", "cat_nonat", "cat_noopen",
     "war_T", "war_sdi", "war_det", "war_I",
     "up_us", "up_cn", "up_row",
     "arrived", "war_cum", "cat_cum",

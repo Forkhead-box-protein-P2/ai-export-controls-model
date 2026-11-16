@@ -6,7 +6,7 @@
 <meta name="description" content="An interactive stochastic game model of US export controls on AI chips, HBM and chipmaking equipment to China: China's responses, compute, AI transition, conflict risk and payoffs.">
 <meta name="theme-color" content="#fafaf8">
 <title>AI Export Controls Game</title>
-<link rel="stylesheet" href="web/style.css?v=2">
+<link rel="stylesheet" href="web/style.css?v=3">
 <script>
 window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
 </script>
@@ -16,7 +16,7 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
 <header class="top"><div class="wrap top-inner">
   <div class="brand">Decision models</div>
   <nav aria-label="Sections">
-    <a href="#game">The game</a><a href="#outcomes">Outcomes</a><a href="#results">Policy values</a><a href="#paths">Paths</a><a href="#conflict">Conflict</a><a href="#breakeven">Break-even</a><a href="#sensitivity">Sensitivity</a><a href="#strategic">Strategic game</a><a href="#assumptions">Assumptions</a><a href="#model">Model</a>
+    <a href="#game">The game</a><a href="#outcomes">Outcomes</a><a href="#results">Policy values</a><a href="#paths">Paths</a><a href="#conflict">Risk channels</a><a href="#breakeven">Break-even</a><a href="#sensitivity">Sensitivity</a><a href="#strategic">Strategic game</a><a href="#assumptions">Assumptions</a><a href="#model">Model</a>
   </nav>
   <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
 </div></header>
@@ -78,11 +78,16 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
 </section>
 
 <section class="block" id="conflict">
-  <div class="sec-head"><div><h2>Conflict channels</h2><p>China's political claim on Taiwan belongs in the <em>baseline</em> hazard, which is calibrated to a stated cumulative probability under Maintain. Controls change the hazard only at the margin, through channels of opposite sign. Below is the marginal effect of Policy A relative to Policy B on the cumulative probability of a first great-power war.</p></div></div>
+  <div class="sec-head"><div><h2>Risk channels: war and catastrophe</h2><p>China's political claim on Taiwan belongs in the <em>baseline</em> war hazard, which is calibrated to a stated cumulative probability under Maintain. Controls change it only at the margin, through channels of opposite sign. Below are the marginal effects of Policy A relative to Policy B on the cumulative probability of a first great-power war and of an AI catastrophe.</p></div></div>
   <div class="two">
     <div class="card"><div class="row" style="justify-content:space-between"><h3>Marginal war risk, A minus B</h3><div class="seg" id="warYearSeg"></div></div><svg class="chart" id="warChart" role="img" aria-label="War risk decomposition"></svg></div>
     <div class="card"><h3>Reading the channels</h3><div class="kv" id="warKv" style="margin:8px 0 12px"></div>
       <p class="d"><b>Provocation:</b> controls raise tension, and tension raises the hazard. <b>Strategic denial:</b> if Beijing believes AI is decisive and the US depends on Taiwanese fabs, cutting China off from those chips gives it a reason to deny them to the US. <b>Deterrence:</b> a US capability lead raises China's expected costs. <b>Interdependence:</b> trade ties make confrontation costlier. Signalling enters through China's belief, which moves with how hard the US works to protect its lead.</p></div>
+  </div>
+  <div class="two" style="margin-top:22px">
+    <div class="card"><h3>Marginal catastrophe risk, A minus B</h3><svg class="chart" id="catChart" role="img" aria-label="Catastrophe risk decomposition"></svg></div>
+    <div class="card"><h3>Reading the safety channels</h3><div class="kv" id="catKv" style="margin:8px 0 12px"></div>
+      <p class="d">The hazard is summed over the US and Chinese frontier developers. Each channel is switched off one at a time on the same simulated paths. <b>Chinese developer:</b> the extra risk from the nationality multiplier on Chinese development. <b>Lead slack:</b> the safety a lead buys, counted only to the extent it is spent on safety. <b>Race:</b> extra risk from a close race under tension. <b>Openness:</b> the open-model effect, if any. <b>Exposure:</b> everything else, mainly how close each developer gets to the threshold (controls keep Chinese labs further from it), plus interactions.</p></div>
   </div>
 </section>
 
@@ -149,7 +154,7 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
     <p>Here \(\ell\) is the lead in years at arrival, \(O\) is open-model competitive pressure, and \(H\) is a persistence half-life correlated with \(d\). A world can be transformed with no durable winner: if open models are close to the frontier, the frontier is distributed.</p>
     <h3>War and catastrophe are hazards</h3>
     <div class="eq">\[ h^{\text{war}}_t=\sigma\Big(\theta_0+\theta_T(T_t-T_0)+\theta_S\,b_t\,\text{dep}^{TW}_t\,x^{\text{eff}}_{\text{chips},t}-\theta_D\tanh\tfrac{\text{lead}_t}{\tau}-\theta_I(I_t-I_0)+\epsilon_t\Big). \]</div>
-    <p>The intercept \(\theta_0\) is solved so that cumulative incidence \(1-\prod_t(1-h_t)\) by 2040 under Maintain matches the stated baseline. A cumulative target is never applied as an annual increment. A war can deny the US Taiwanese fabs, capture them, or stay limited, and each costs differently. The catastrophe hazard peaks around the transition. A long lead for whoever is ahead lowers it, because it buys time to test systems, and a close race under tension raises it. China leading is not assumed to be more dangerous unless you set that multiplier. Because a catastrophe has no feedback on the simulated state, its loss is valued as an exact expectation along each path, \(1-\prod_t(1-h^{\text{cat}}_t)\), rather than from rare simulated events; the outcome probabilities still report simulated events.</p>
+    <p>The intercept \(\theta_0\) is solved so that cumulative incidence \(1-\prod_t(1-h_t)\) by 2040 under Maintain matches the stated baseline. A cumulative target is never applied as an annual increment. A war can deny the US Taiwanese fabs, capture them, or stay limited, and each costs differently. The catastrophe hazard peaks around the transition. A long lead for whoever is ahead lowers it, because it buys time to test systems, and a close race under tension raises it. The hazard is summed over the two developers, each weighted by its own proximity to the threshold, so a trailing developer adds risk while it closes in. Chinese development carries a nationality multiplier, set explicitly in each worldview (1 = no difference). The leader's reduction from its lead is scaled by the share of slack actually spent on safety, which is low if labs in the leading country race each other. Because a catastrophe has no feedback on the simulated state, its loss is valued as an exact expectation along each path, \(1-\prod_t(1-h^{\text{cat}}_t)\), rather than from rare simulated events; the outcome probabilities still report simulated events.</p>
     <h3>Payoffs: a vector, aggregated last</h3>
     <p>Each world yields discounted components:</p>
     <ul>
@@ -182,8 +187,8 @@ pytest</pre>
 </main>
 <footer class="footer"><div class="wrap">AI export controls game model · an interactive, illustrative decision model. Parameters are editable and mostly illustrative; nothing here is a forecast.</div></footer>
 <div id="tip" role="tooltip"></div>
-<script src="web/params.js?v=2"></script>
-<script src="web/model.js?v=2"></script>
-<script src="web/app.js?v=2"></script>
+<script src="web/params.js?v=3"></script>
+<script src="web/model.js?v=3"></script>
+<script src="web/app.js?v=3"></script>
 </body>
 </html>

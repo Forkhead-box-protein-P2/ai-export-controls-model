@@ -33,6 +33,6 @@ def test_js_matches_python(root, config):
         probs = A.outcome_probs(run).set_index("policy").loc[pol]
         for k in ("us_durable", "near_simultaneous", "distributed", "war_by_2050", "catastrophe"):
             assert abs(j["outcomes"][k] - probs[k]) < 1e-9, (pol, k)
-        for w, v in j["delta"].items():
+        for w, v in j["delta"].items():  # noqa: B007
             py = payoffs.aggregate(res.comps - ref, cfg.weights[w]).mean()
             assert np.isclose(v, py, rtol=1e-6, atol=1e-6), (pol, w)

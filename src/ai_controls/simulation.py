@@ -111,6 +111,8 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
     wtype = np.full(n, 2)
     dep_at_war = zeros()
     cat_surv = np.ones(n)
+    crossed_us, crossed_cn = false(), false()
+    t_cross_us, t_cross_cn = np.full(n, NEVER), np.full(n, NEVER)
     R_prev = x_prev = acc = None
     lag_prev = zeros()
     Tr_us0 = inf_us0 = inf_cn0 = avail0 = None
@@ -203,11 +205,17 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
         yrs_since = np.maximum(t - t_arr, 0)
         adv = np.where(arrived, kcap * 0.5 ** (yrs_since / half_life), 0.0)
         prox = ai_transition.proximity(arrived, yrs_since, theta, front, P)
+        new_us, new_cn = ~crossed_us & (logA_us >= theta), ~crossed_cn & (logA_cn >= theta)
+        t_cross_us, t_cross_cn = np.where(new_us, t, t_cross_us), np.where(new_cn, t, t_cross_cn)
+        crossed_us, crossed_cn = crossed_us | new_us, crossed_cn | new_cn
+        prox_us = ai_transition.developer_proximity(crossed_us, t_cross_us, t, theta, logA_us, P)
+        prox_cn = ai_transition.developer_proximity(crossed_cn, t_cross_cn, t, theta, logA_cn, P)
         adverse = np.where(leader == 1, u_adv < P.p_adverse_us,
                            np.where(leader == 2, u_adv < P.p_adverse_cn, False))
 
         # 9. Catastrophe hazard.
-        h_cat_raw = ai_transition.catastrophe_hazard(prox, lag_years, T, logA_cn > logA_us, O, P)
+        cat_args = (prox_us, prox_cn, lag_years, T, O, P)
+        h_cat_raw, _, h_cat_cn = ai_transition.catastrophe_hazard(*cat_args)
         cat_surv = cat_surv * (1.0 - h_cat_raw)
         h_cat = np.where(cat, 0.0, h_cat_raw)
         if events:
@@ -271,6 +279,11 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
                 "K_logic": K_logic, "K_hbm": K_hbm, "K_sme": K_sme, "K_soft": K_soft,
                 "logA_us": logA_us, "logA_cn": logA_cn, "lag_years": lag_years, "O": O,
                 "T": T, "I": I, "h_war": h_war, "h_cat": h_cat,
+                "cat_raw": h_cat_raw, "cat_cn": h_cat_cn,
+                "cat_noslack": ai_transition.catastrophe_hazard(*cat_args, slack_on=0.0)[0],
+                "cat_norace": ai_transition.catastrophe_hazard(*cat_args, race_on=0.0)[0],
+                "cat_nonat": ai_transition.catastrophe_hazard(*cat_args, nat_on=0.0)[0],
+                "cat_noopen": ai_transition.catastrophe_hazard(*cat_args, open_on=0.0)[0],
                 "adv_us": np.where(leader == 1, adv, 0.0), "adv_cn": np.where(leader == 2, adv, 0.0),
                 "war_T": parts[0], "war_sdi": parts[1], "war_det": parts[2], "war_I": parts[3],
                 "up_us": base_up["us"] + tai_us, "up_cn": base_up["cn"] + tai_cn,

@@ -10,4 +10,5 @@ meta:
     range, world by world, with correlated draws within the industrial, decisiveness and
     captive-market clusters.
 sampling: all
+# slack_used and cat_mult_cn are drawn across their full ranges (0-1 and 0.5-3).
 overrides: {}

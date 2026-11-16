@@ -26,6 +26,9 @@ scenarios:
   no_signalling:
     label: US controls carry no signal about AI's importance
     overrides: {sig_eta: 0.0}
+  chinese_ai_riskier:
+    label: Chinese frontier AI three times as hazardous; US slack fully spent on safety
+    overrides: {cat_mult_cn: 3.0, slack_used: 1.0}
   high_signalling:
     label: US controls strongly signal that AI is decisive
     overrides: {sig_eta: 0.2, th_sdi: 1.0}

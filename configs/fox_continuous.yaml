@@ -48,5 +48,9 @@ overrides:
   th_det: 0.3
   sig_eta: 0.1
   tens_cost: 0.006
-  # Safety: a lead buys less.
+  # Safety: a lead buys less, and US labs racing each other spend little of the slack it
+  # buys. No difference between US and Chinese developers is assumed. Illustrative, not
+  # elicited.
   lead_safety: 0.15
+  slack_used: 0.2
+  cat_mult_cn: 1.0

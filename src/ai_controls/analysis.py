@@ -122,6 +122,38 @@ def war_decomposition(run: Run, policy: str, ref: str | None = None, by: int = 2
     return out
 
 
+CAT_CHANNELS = {"cat_noslack": "lead slack", "cat_norace": "race", "cat_nonat": "Chinese developer (nationality)",
+                "cat_noopen": "openness"}
+
+
+def cat_decomposition(run: Run, policy: str, ref: str | None = None, by: int = 2040) -> dict:
+    """Marginal catastrophe risk of ``policy`` relative to ``ref`` and its channels.
+
+    Cumulative probability is 1 - prod(1 - h_t) on each path. Because a catastrophe has no
+    feedback on the simulated state, each channel's contribution is found exactly by
+    recomputing the hazard on the same path with that channel switched off:
+    (P_policy - P_policy without it) - (P_ref - P_ref without it). Channels are switched off
+    one at a time; the remainder, labelled exposure, is the change in how close each
+    developer gets to the threshold plus interactions between channels.
+    """
+    ref = ref or run.cfg.reference_policy
+    i = run.cfg.years.index(by)
+    a, b = run.results[policy].series, run.results[ref].series
+    cum = lambda s, k: (1.0 - np.prod(1.0 - s[k][: i + 1], axis=0)).mean()
+    total = cum(a, "cat_raw") - cum(b, "cat_raw")
+    out = {"policy": policy, "ref": ref, "by": by, "baseline": float(cum(b, "cat_raw")),
+           "marginal_pp": 100 * float(total)}
+    rest = total
+    for k, lab in CAT_CHANNELS.items():
+        d = (cum(a, "cat_raw") - cum(a, k)) - (cum(b, "cat_raw") - cum(b, k))
+        out[f"{lab}_pp"] = 100 * float(d)
+        rest -= d
+    out["exposure_pp"] = 100 * float(rest)
+    share = lambda s: float(s["cat_cn"][: i + 1].sum() / max(s["cat_raw"][: i + 1].sum(), 1e-12))
+    out["cn_share_policy"], out["cn_share_ref"] = share(a), share(b)
+    return out
+
+
 def delta_value(cfg: Config, n: int, seed: int, pol_a: str, pol_b: str, weights: str) -> tuple[float, float]:
     """Mean and standard error of V(pol_a) - V(pol_b)."""
     run = run_config(cfg, n, seed, policies=[pol_a, pol_b], record=False)

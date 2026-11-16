@@ -139,6 +139,18 @@
     const q = P.terminal_persist / (1 + P.discount_rate);
     return q * (1 - Math.pow(q, P.terminal_years)) / (1 - q);
   }
+  /** Catastrophe hazard summed over the US and Chinese developers; see ai_transition.py. */
+  function catHaz(proxUS, proxCN, lag, T, O, P, sl, ra, na, op) {
+    const gap = Math.abs(lag), slack = 1 - Math.exp(-gap / P.safe_tau);
+    const race = Math.exp(-gap / P.safe_tau) * (0.5 + 0.5 * T);
+    const cut = sl * P.lead_safety * P.slack_used * slack, usLeads = lag >= 0;
+    const common = P.cat_base * (1 + ra * P.race_risk * race) * Math.max(1 + op * P.open_risk * O, 0);
+    const hUS = common * proxUS * (usLeads ? 1 - cut : 1);
+    const hCN = common * proxCN * (usLeads ? 1 : 1 - cut) * (1 + na * (P.cat_mult_cn - 1));
+    CH.us = hUS; CH.cn = hCN;
+    return clip(hUS + hCN, 0, 1);
+  }
+  const CH = { us: 0, cn: 0 };
   function baseUplift(avail, avail0, inf, inf0, P) {
     const u = Math.max(P.cap_w * (avail - avail0) + P.inf_w * Math.log(Math.max(inf, EPS) / inf0), 0);
     return P.uplift_max * (1 - Math.exp(-u / P.uplift_scale));
@@ -208,6 +220,7 @@
 
       let arrived = false, nearSim = false, distributed = false, tArr = NEVER, leader = 0, lead0 = 0, kcap = 0;
       let war = false, escal = false, cat = false, tWar = NEVER, tCat = NEVER, wtype = 2, depAtWar = 0, catSurv = 1;
+      let crossedUS = false, crossedCN = false, tCrossUS = NEVER, tCrossCN = NEVER;
       let R_prev = 0, acc = 0, lagPrev = 0, alg_anchor = 0;
       let Tr_us0 = 0, inf_us0 = 0, inf_cn0 = 0, av0_us = 0, av0_cn = 0, av0_row = 0;
 
@@ -311,12 +324,13 @@
         const adv = arrived ? kcap * Math.pow(0.5, yrsSince / halfLife) : 0;
         const prox = arrived ? Math.pow(0.5, yrsSince / P.cat_window) : Math.exp(-Math.max(theta - front, 0) / PROX_SCALE);
         const adverse = leader === 1 ? uAdv < P.p_adverse_us : leader === 2 ? uAdv < P.p_adverse_cn : false;
+        if (!crossedUS && logA_us >= theta) { crossedUS = true; tCrossUS = t; }
+        if (!crossedCN && logA_cn >= theta) { crossedCN = true; tCrossCN = t; }
+        const proxUS = crossedUS ? Math.pow(0.5, Math.max(t - tCrossUS, 0) / P.cat_window) : Math.exp(-Math.max(theta - logA_us, 0) / PROX_SCALE);
+        const proxCN = crossedCN ? Math.pow(0.5, Math.max(t - tCrossCN, 0) / P.cat_window) : Math.exp(-Math.max(theta - logA_cn, 0) / PROX_SCALE);
 
         // 9. Catastrophe.
-        const gapC = Math.abs(lag), sl = 1 - Math.exp(-gapC / P.safe_tau);
-        const race = Math.exp(-gapC / P.safe_tau) * (0.5 + 0.5 * T);
-        const hCatRaw = clip(P.cat_base * prox * (1 - P.lead_safety * sl) * (1 + P.race_risk * race)
-          * (logA_cn > logA_us ? P.cat_mult_cn : 1) * Math.max(1 + P.open_risk * O, 0), 0, 1);
+        const hCatRaw = catHaz(proxUS, proxCN, lag, T, O, P, 1, 1, 1, 1), hCatCN = CH.cn;
         catSurv *= 1 - hCatRaw;
         const h_cat = cat ? 0 : hCatRaw;
         if (events && !cat && U('cat', t) < h_cat) { cat = true; tCat = t; }
@@ -403,6 +417,13 @@
           rec.war_T = pT; rec.war_sdi = pSdi; rec.war_det = pDet; rec.war_I = pI;
           rec.up_us = up_us + tai_us; rec.up_cn = up_cn + tai_cn; rec.up_row = up_row + tai_row;
           rec.arrived = arrived ? 1 : 0; rec.war_cum = war ? 1 : 0; rec.cat_cum = cat ? 1 : 0;
+          rec.cat_raw = hCatRaw; rec.cat_cn = hCatCN;
+          if (S.cat_noslack) {
+            rec.cat_noslack = catHaz(proxUS, proxCN, lag, T, O, P, 0, 1, 1, 1);
+            rec.cat_norace = catHaz(proxUS, proxCN, lag, T, O, P, 1, 0, 1, 1);
+            rec.cat_nonat = catHaz(proxUS, proxCN, lag, T, O, P, 1, 1, 0, 1);
+            rec.cat_noopen = catHaz(proxUS, proxCN, lag, T, O, P, 1, 1, 1, 0);
+          }
           const o = t * n + i;
           for (const k of recNames) S[k][o] = rec[k];
         }
@@ -633,6 +654,20 @@
     for (const lab of Object.values(names)) pp[lab] = Math.abs(tot) > 1e-12 ? 100 * total * dl[lab] / tot : 0;
     return { baseline: cumulative(resB, 'h_war', t), withPolicy: cumulative(resA, 'h_war', t), marginal_pp: 100 * total, logit: dl, pp };
   }
+  /** Marginal catastrophe risk A - B by year t and its channels (see analysis.cat_decomposition). */
+  function catDecomposition(resA, resB, t) {
+    const ch = { cat_noslack: 'lead slack', cat_norace: 'race', cat_nonat: 'Chinese developer', cat_noopen: 'openness' };
+    const total = cumulative(resA, 'cat_raw', t) - cumulative(resB, 'cat_raw', t);
+    const pp = {};
+    let rest = total;
+    for (const [k, lab] of Object.entries(ch)) {
+      const d = (cumulative(resA, 'cat_raw', t) - cumulative(resA, k, t)) - (cumulative(resB, 'cat_raw', t) - cumulative(resB, k, t));
+      pp[lab] = 100 * d; rest -= d;
+    }
+    pp.exposure = 100 * rest;
+    const share = res => { let a = 0, b = 0; for (let u = 0; u <= t; u++) for (let i = 0; i < res.n; i++) { a += res.series.cat_cn[u * res.n + i]; b += res.series.cat_raw[u * res.n + i]; } return b > 0 ? a / b : 0; };
+    return { baseline: cumulative(resB, 'cat_raw', t), withPolicy: cumulative(resA, 'cat_raw', t), marginal_pp: 100 * total, pp, cnShareA: share(resA), cnShareB: share(resB) };
+  }
   function twoWorldToy(p, du, dn, c) {
     return { delta: p * du + (1 - p) * dn - c, breakEven: du !== dn ? (c - dn) / (du - dn) : NaN };
   }
@@ -640,6 +675,6 @@
   return {
     data: D, uniform, normal, invnorm, normcdf, makeConfig, withOverrides, sampleParams, calibrate,
     simulate, runConfig, weightVector, compare, absoluteValue, seriesSummary, seriesMean, outcomeProbs,
-    cumulative, warDecomposition, twoWorldToy, PINDEX, COMPONENTS,
+    cumulative, warDecomposition, catDecomposition, twoWorldToy, PINDEX, COMPONENTS,
   };
 });

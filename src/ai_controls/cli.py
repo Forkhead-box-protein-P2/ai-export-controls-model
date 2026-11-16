@@ -53,7 +53,7 @@ def _series_table(run: A.Run, names) -> pd.DataFrame:
 
 def cmd_compare(args) -> None:
     out = _out(args.out)
-    tables, probs, wars, runs = [], [], [], []
+    tables, probs, wars, cats, runs = [], [], [], [], []
     for path in args.configs:
         cfg = load_config(path)
         run = A.run_config(cfg, args.runs, args.seed)
@@ -63,6 +63,7 @@ def cmd_compare(args) -> None:
         for pol in run.results:
             if pol != cfg.reference_policy:
                 wars.append({"config": cfg.name, **A.war_decomposition(run, cfg.reference_policy, pol)})
+                cats.append({"config": cfg.name, **A.cat_decomposition(run, cfg.reference_policy, pol)})
         _series_table(run, TRAJECTORY_SERIES).to_csv(out / f"trajectories_{cfg.name}.csv", index=False)
         _series_table(run, INDIGENISATION_SERIES).to_csv(out / f"indigenisation_{cfg.name}.csv", index=False)
         A.calibration_report(run).to_csv(out / f"calibration_{cfg.name}.csv", index=False)
@@ -87,6 +88,7 @@ def cmd_compare(args) -> None:
     table.to_csv(out / "policy_table.csv", index=False)
     prob.to_csv(out / "outcome_probs.csv", index=False)
     pd.DataFrame(wars).to_csv(out / "war_decomposition.csv", index=False)
+    pd.DataFrame(cats).to_csv(out / "cat_decomposition.csv", index=False)
     regret = A.regret_table(tables)
     regret.to_csv(out / "regret.csv")
     labels = {k: v["label"] for k, v in runs[0].cfg.policies.items()}

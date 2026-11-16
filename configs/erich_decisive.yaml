@@ -28,6 +28,11 @@ overrides:
   cat_base: 0.02
   cat_severity: 0.6
   lead_safety: 0.5
+  # A lead's slack is mostly spent on testing and security, and frontier development in a
+  # pluralistic society with checks and balances is treated as somewhat safer. Both values
+  # are illustrative, not elicited.
+  slack_used: 0.9
+  cat_mult_cn: 1.5
   # Compute lead: slow indigenous equipment and capacity growth, so the Maintain path
   # holds roughly 10x or more for a decade and 2x or more through the 2040s; China's
   # appetite for imported compute is large, so easing shrinks the gap a lot.

@@ -111,7 +111,12 @@ Within each year:
     - capture \(k = d(1-e^{-\ell/c})(1-\omega O)\), zero if distributed.
 
     The advantage held is \(a_t = k\,2^{-(t-t^*)/H}\). Decisiveness d comes from a Kumaraswamy mixture: high regime with probability `p_high_dec`, mean 0.77; low regime mean 0.19. H is lognormal with P(H ≥ 10) = `p_persist10` and is correlated with the regime draw.
-11. **Catastrophe hazard.** \(h^{cat} = c_0 \cdot \text{prox}\cdot(1-\lambda_s(1-e^{-|\ell|/\tau_s}))(1+\kappa_r e^{-|\ell|/\tau_s}(\tfrac12+\tfrac12T))\cdot m_{CN}\cdot(1+o_r O)\). Proximity ramps up before arrival and decays with half-life `cat_window` afterwards. The loss enters payoffs as an exact expectation \(1-\prod(1-h^{cat})\), because a catastrophe has no feedback on the state. Simulated events are kept for outcome probabilities.
+11. **Catastrophe hazard.** It is summed over the two developers: \(h^{cat} = c_0(1+\kappa_r e^{-|\ell|/\tau_s}(\tfrac12+\tfrac12T))(1+o_r O)\,[\text{prox}_{US}\,s_{US} + m_{CN}\,\text{prox}_{CN}\,s_{CN}]\).
+    - Each developer's proximity rises as its own capability nears the threshold and decays with half-life `cat_window` after it crosses, so a trailing developer adds risk while it closes in.
+    - The leader's factor is \(s = 1-\lambda_s u_s(1-e^{-|\ell|/\tau_s})\), where \(u_s\) = `slack_used` is the share of the slack actually spent on safety. The follower's factor is 1.
+    - \(m_{CN}\) = `cat_mult_cn` is set explicitly in each worldview: 1 in the continuous one, 1.5 in the decisive one, sampled from 0.5 to 3 in the agnostic one. All of these are illustrative.
+    - With the Chinese developer far from the threshold, \(u_s=1\) and the US ahead, this reduces to a single-frontier hazard.
+    - `cat_decomposition` switches each channel off on the same paths (lead slack, race, nationality, openness). The remainder, "exposure", is the change in how close each developer gets to the threshold, plus interactions. The loss enters payoffs as an exact expectation \(1-\prod(1-h^{cat})\), because a catastrophe has no feedback on the state. Simulated events are kept for outcome probabilities.
 12. **War hazard.** \(h^{war}=\sigma(\theta_0 + \theta_T(T-T_0) + \theta_S\, b\,\text{dep}^{TW} x^{\text{eff}}_{chips} - \theta_D\tanh(\max(\ell,0)/\tau) - \theta_I(I-I_0) + \epsilon_{world} + \epsilon_t)\). A war is a denial, capture or limited conflict, with different fab losses and costs. A war may escalate to a permanent output loss.
 13. **State update.**
     - Stocks depreciate and add deliveries.

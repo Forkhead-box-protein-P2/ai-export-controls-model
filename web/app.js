@@ -8,7 +8,8 @@
   const POLS = [...Object.keys(D.policies), 'custom'];
   // Only the series the page draws are recorded, which halves the run time.
   const SITE_SERIES = ['x_chips', 'x_hbm', 'x_sme', 'x_cloud', 'x_enf', 'm', 'y_rd', 'y_ret', 'h', 'b_cn', 'dom_share', 'Q_dom', 'W', 'imports',
-    'K_soft', 'K_logic', 'K_sme', 'ratio_stock', 'ratio_train', 'lag_years', 'O', 'h_war', 'h_cat', 'adv_us', 'adv_cn', 'war_T', 'war_sdi', 'war_det', 'war_I'];
+    'K_soft', 'K_logic', 'K_sme', 'ratio_stock', 'ratio_train', 'lag_years', 'O', 'h_war', 'h_cat', 'adv_us', 'adv_cn', 'war_T', 'war_sdi', 'war_det', 'war_I',
+    'cat_raw', 'cat_cn', 'cat_noslack', 'cat_norace', 'cat_nonat', 'cat_noopen'];
   const GROUPS = Object.keys(D.groups);
   const GC = Object.fromEntries(GROUPS.map((g, k) => [g, `var(--c${k + 1})`]));
   const CONFIGS = ['baseline', 'fox_continuous', 'erich_decisive', 'agnostic_wide'];
@@ -203,9 +204,9 @@
         'Whether a durable order is institutionally adverse is drawn separately for US-led and China-led orders, and an adverse order costs every economy a share of output while it lasts. Neither is assumed safe or benign by construction; set the two probabilities equal to remove any difference.'],
       eqn: '\\(\\text{durable}\\iff k\\ge 0.25\\ \\wedge\\ H\\ge 10\\text{ yr}\\)' },
     haz: { step: 'H', title: 'Hazards: war and catastrophe', sub: 'Annual hazards alongside every stage', haz: true,
-      params: ['war_base_2040', 'th_T', 'th_sdi', 'th_det', 'th_I', 'cat_base', 'lead_safety', 'race_risk', 'cat_severity'],
+      params: ['war_base_2040', 'th_T', 'th_sdi', 'th_det', 'th_I', 'cat_base', 'cat_mult_cn', 'lead_safety', 'slack_used', 'race_risk', 'cat_severity'],
       why: ['The baseline war hazard, where China’s political claim on Taiwan belongs, is calibrated to a cumulative probability by 2040 under Maintain. Controls change it only at the margin: provocation through tension, strategic denial through Beijing’s belief and US dependence on Taiwan, deterrence through the US lead, and interdependence through trade.',
-        'The catastrophe hazard peaks around the transition. A longer lead for whoever is ahead lowers it (time to test and secure systems); a close race under tension raises it.'],
+        'The catastrophe hazard is summed over the US and Chinese frontier developers, each in proportion to how close it is to the threshold, so a trailing developer adds risk too. Chinese development carries a nationality multiplier (1 = no difference). A lead lowers the leader’s hazard only to the extent its slack is actually spent on safety rather than on racing domestic rivals; a close race under tension raises both.'],
       eqn: '\\(h_t=\\sigma\\big(\\theta_0+\\theta_T\\Delta T_t+\\theta_S b_t\\,\\text{dep}_t\\,x^{\\text{eff}}_{\\text{chips}}-\\theta_D\\tanh\\tfrac{\\text{lead}_t}{\\tau}-\\theta_I\\Delta I_t\\big)\\)' },
     pay: { step: '9', title: 'Payoffs', sub: 'A vector of components, weighted only at the end', wide: true,
       params: ['discount_rate', 'terminal_years', 'uplift_max', 'open_boost', 'sci_spill', 'markup_max', 'tens_cost'],
@@ -333,6 +334,7 @@
         return dual(`War by ${yr}`, by('t_war', A), by('t_war', B), [0, 0.4], v => pc(v, 1)) +
           dual('War hazard this year', meanAt(A, 'h_war', t), meanAt(B, 'h_war', t), [0, 0.04], v => pc(v, 2)) +
           dual(`Catastrophe by ${yr}`, by('t_cat', A), by('t_cat', B), [0, 0.4], v => pc(v, 1)) +
+          dual('Chinese share of AI hazard', meanAt(A, 'cat_cn', t) / Math.max(meanAt(A, 'cat_raw', t), 1e-12), meanAt(B, 'cat_cn', t) / Math.max(meanAt(B, 'cat_raw', t), 1e-12), [0, 1], v => pc(v), false, 'Share of this year’s catastrophe hazard that comes from the Chinese developer') +
           `<div class="small" style="margin-top:6px">Marginal war risk A − B by ${yr}: <b>${sgn(wd.marginal_pp, 2)} pp</b></div>`;
       }
       case 'pay': {
@@ -580,13 +582,10 @@
 
   // ---------------------------------------------------------------- conflict
   let warYear = 2040;
-  function renderConflict() {
-    seg($('warYearSeg'), [2035, 2040, 2050].map(y => [String(y), 'by ' + y]), String(warYear), k => { warYear = +k; renderConflict(); });
-    const t = warYear - D.start_year, wd = M.warDecomposition(res(S.A), res(S.B), t);
-    const ch = ['provocation', 'strategic denial', 'deterrence', 'interdependence'];
+  function waterfall(svgId, pp, ch, total, caption) {
     const W = 560, H = 250, L = 46, R = 10, T = 18, B = 40;
-    let run = 0; const bars = ch.map(c => { const a = run; run += wd.pp[c]; return { c, a, b: run, v: wd.pp[c] }; });
-    bars.push({ c: 'total', a: 0, b: wd.marginal_pp, v: wd.marginal_pp, total: true });
+    let run = 0; const bars = ch.map(c => { const a = run; run += pp[c]; return { c, a, b: run, v: pp[c] }; });
+    bars.push({ c: 'total', a: 0, b: total, v: total, total: true });
     const vals = bars.flatMap(b => [b.a, b.b]).concat(0);
     let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.15 || 0.1; lo -= pad; hi += pad;
     const bw = (W - L - R) / bars.length, sy = v => T + (hi - v) / (hi - lo) * (H - T - B);
@@ -597,10 +596,19 @@
       const col = b.total ? 'var(--ink2)' : b.v >= 0 ? 'var(--neg)' : 'var(--pos)';
       g += `<rect x="${x}" y="${y0}" width="${w}" height="${Math.max(y1 - y0, 1)}" rx="3" style="fill:${col}"/>`;
       g += `<text x="${x + w / 2}" y="${(b.v >= 0 ? y0 - 5 : y1 + 13)}" text-anchor="middle" style="font-size:11px;font-variant-numeric:tabular-nums">${sgn(b.v, 2)}</text>`;
-      g += `<text x="${x + w / 2}" y="${H - 22}" text-anchor="middle" style="fill:var(--muted);font-size:10.5px">${b.c === 'strategic denial' ? 'strategic' : b.c}</text>${b.c === 'strategic denial' ? `<text x="${x + w / 2}" y="${H - 10}" text-anchor="middle" style="fill:var(--muted);font-size:10.5px">denial</text>` : ''}`;
+      const words = b.c.split(' '), l1 = words.length > 1 ? words[0] : b.c, l2 = words.length > 1 ? words.slice(1).join(' ') : '';
+      g += `<text x="${x + w / 2}" y="${H - 22}" text-anchor="middle" style="fill:var(--muted);font-size:10.5px">${l1}</text>${l2 ? `<text x="${x + w / 2}" y="${H - 10}" text-anchor="middle" style="fill:var(--muted);font-size:10.5px">${l2}</text>` : ''}`;
     });
-    g += `<text x="${L}" y="${T - 6}" style="fill:var(--muted);font-size:10px">percentage points of cumulative war probability; red raises risk, blue lowers it</text>`;
-    const svg = $('warChart'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = g;
+    g += `<text x="${L}" y="${T - 6}" style="fill:var(--muted);font-size:10px">${caption}</text>`;
+    const svg = $(svgId); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = g;
+  }
+  function renderConflict() {
+    seg($('warYearSeg'), [2035, 2040, 2050].map(y => [String(y), 'by ' + y]), String(warYear), k => { warYear = +k; renderConflict(); });
+    const t = warYear - D.start_year, wd = M.warDecomposition(res(S.A), res(S.B), t);
+    waterfall('warChart', wd.pp, ['provocation', 'strategic denial', 'deterrence', 'interdependence'], wd.marginal_pp, 'percentage points of cumulative war probability; red raises risk, blue lowers it');
+    const cd = M.catDecomposition(res(S.A), res(S.B), t);
+    waterfall('catChart', cd.pp, ['exposure', 'Chinese developer', 'lead slack', 'race', 'openness'], cd.marginal_pp, 'percentage points of cumulative catastrophe probability; red raises risk, blue lowers it');
+    $('catKv').innerHTML = `<span><span class="sw a"></span>P(catastrophe by ${warYear}), ${esc(polLabel(S.A))}</span><b>${pc(cd.withPolicy, 1)}</b><span><span class="sw b"></span>P(catastrophe by ${warYear}), ${esc(polLabel(S.B))}</span><b>${pc(cd.baseline, 1)}</b><span>Marginal effect, A − B</span><b>${sgn(cd.marginal_pp, 2)} pp</b><span>Chinese-developer share of hazard, A / B</span><b>${pc(cd.cnShareA)} / ${pc(cd.cnShareB)}</b>`;
     const ref = S.cfg.reference_policy;
     $('warKv').innerHTML = `<span><span class="sw a"></span>P(war by ${warYear}), ${esc(polLabel(S.A))}</span><b>${pc(wd.withPolicy, 1)}</b><span><span class="sw b"></span>P(war by ${warYear}), ${esc(polLabel(S.B))}</span><b>${pc(wd.baseline, 1)}</b><span>Marginal effect, A − B</span><b>${sgn(wd.marginal_pp, 2)} pp</b><span>Calibrated baseline: P(war by 2040) under ${esc(polLabel(ref))}</span><b>${pc(S.run.calib.war_2040, 1)}</b>`;
   }

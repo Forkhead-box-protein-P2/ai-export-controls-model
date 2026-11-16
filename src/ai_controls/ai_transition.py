@@ -88,19 +88,38 @@ def proximity(arrived, yrs_since, theta, front, P):
     return np.where(arrived, post, pre)
 
 
-def catastrophe_hazard(prox, lag_years, T, cn_leads, O, P):
-    """Annual hazard of an AI catastrophe.
+def developer_proximity(crossed, t_cross, t, theta, logA, P):
+    """One developer's exposure: rises as its own capability nears the threshold and decays
+    with half-life ``cat_window`` after it crosses. A trailing developer is exposed too."""
+    pre = np.exp(-np.maximum(theta - logA, 0.0) / PROX_SCALE)
+    post = 0.5 ** (np.maximum(t - t_cross, 0) / P.cat_window)
+    return np.where(crossed, post, pre)
 
-    A longer lead for whoever is ahead gives slack to test and secure systems
-    (``lead_safety``); a close race under tension adds risk. Neither nationality is
-    assumed safe: ``cat_mult_cn`` defaults to one.
+
+def catastrophe_hazard(prox_us, prox_cn, lag_years, T, O, P, slack_on=1.0, race_on=1.0,
+                       nat_on=1.0, open_on=1.0):
+    """Annual hazard of an AI catastrophe, summed over the US and Chinese frontier developers.
+
+    Each developer contributes in proportion to its own proximity to the transformative
+    threshold. The leader's contribution falls with the slack its lead buys, but only to the
+    extent that slack is spent on safety (``slack_used``; US labs racing each other spend
+    little of it). A close race under tension raises both. Chinese development carries the
+    multiplier ``cat_mult_cn`` (1 = no nationality difference). The ``*_on`` switches turn a
+    channel off for the decomposition. Returns (total, US part, Chinese part).
+
+    With the Chinese developer far from the threshold (prox_cn = 0), ``slack_used`` = 1 and
+    the US ahead, this is the single-frontier hazard of earlier versions.
     """
     gap = np.abs(lag_years)
     slack = 1.0 - np.exp(-gap / P.safe_tau)
     race = np.exp(-gap / P.safe_tau) * (0.5 + 0.5 * T)
-    h = (P.cat_base * prox * (1.0 - P.lead_safety * slack) * (1.0 + P.race_risk * race)
-         * np.where(cn_leads, P.cat_mult_cn, 1.0) * np.maximum(1.0 + P.open_risk * O, 0.0))
-    return np.clip(h, 0.0, 1.0)
+    cut = slack_on * P.lead_safety * P.slack_used * slack
+    us_leads = lag_years >= 0
+    common = (P.cat_base * (1.0 + race_on * P.race_risk * race)
+              * np.maximum(1.0 + open_on * P.open_risk * O, 0.0))
+    h_us = common * prox_us * np.where(us_leads, 1.0 - cut, 1.0)
+    h_cn = common * prox_cn * np.where(us_leads, 1.0, 1.0 - cut) * (1.0 + nat_on * (P.cat_mult_cn - 1.0))
+    return np.clip(h_us + h_cn, 0.0, 1.0), h_us, h_cn
 
 
 def classify(arrived, leader, near_sim, distributed, kcap, half_life):
