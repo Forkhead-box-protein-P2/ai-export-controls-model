@@ -196,6 +196,7 @@
       if (!events) theta = Infinity;
       const uAdv = U('adverse'), uWtype = U('war_type'), uEsc = U('war_escal'), uDist = U('dist');
       const twShock = P.th_tw_sd * Z('tw'), openShock = P.open_sigma * Z('open_shock');
+      const gapShock = P.intrinsic_sd * Z('intrinsic');
 
       // Initial state.
       let C_us = P.c_us0;
@@ -215,8 +216,8 @@
       let h = P.h0, b_cn = P.b_cn0, B = P.backlog0 * C_cn0;
       let G_us = 0, G_cn = 0, T = P.T0, I = P.I0, cumW = 0;
       let tai_us = 0, tai_cn = 0, tai_row = 0;
-      const ppwRel0 = Math.exp(-P.ppw_gamma * (1 - K_logic));
-      const E_us0 = P.pow_slack_us0 * C_us, E_cn0 = P.pow_slack_cn0 * (C_imp + C_dom / ppwRel0);
+      // Power in compute units a 2026 Western chip could run; China's relative to the US's physical capacity.
+      let E_us = P.pow_slack_us0 * C_us, E_cn = P.pow_cn_us0 * E_us, res_us = 1, res_cn = 1;
 
       let arrived = false, nearSim = false, distributed = false, tArr = NEVER, leader = 0, lead0 = 0, kcap = 0;
       let war = false, escal = false, cat = false, tWar = NEVER, tCat = NEVER, wtype = 2, depAtWar = 0, catSurv = 1;
@@ -283,8 +284,9 @@
         // 6. Remote compute, power and services.
         const remote = P.cloud_suit * B * (1 - xcl);
         const ppwIdx = Math.exp(P.ppw_share * cumW), ppwRel = Math.exp(-P.ppw_gamma * (1 - K_logic));
-        const pf_us = Math.min(1, E_us0 * Math.exp(P.g_e_us * t) / Math.max(C_us / ppwIdx, EPS));
-        const pf_cn = Math.min(1, E_cn0 * Math.exp(P.g_e_cn * t) / Math.max((C_imp + C_dom / ppwRel) / ppwIdx, EPS));
+        const need_us = C_us / ppwIdx, need_cn = (C_imp + C_dom / ppwRel) / ppwIdx;
+        if (t === 0) { res_us = E_us / need_us; res_cn = E_cn / need_cn; }
+        const pf_us = Math.min(1, E_us / Math.max(need_us, EPS)), pf_cn = Math.min(1, E_cn / Math.max(need_cn, EPS));
         const S_us = P.util * Math.max(C_us * pf_us - scarcity_t * remote, 0);
         const S_cn_local = P.util * pf_cn * (C_imp + C_dom * usab);
         const S_cn = S_cn_local + P.util * remote;
@@ -298,7 +300,7 @@
         if (t === 0) G_cn = -(P.lag0 * rate + P.alpha_T * Math.log(Tr_cn / Tr_us));
         const logA_us = P.alpha_T * Math.log(Math.max(Tr_us, 1e-12) / Tr_us0) + G_us;
         const comp_cn = P.alpha_T * Math.log(Math.max(Tr_cn, 1e-12) / Tr_us0);
-        const logA_cn = Math.max(Math.min(comp_cn + G_cn, logA_us - P.follow_floor), comp_cn + G_us - P.intrinsic_gap);
+        const logA_cn = Math.max(Math.min(comp_cn + G_cn, logA_us - P.follow_floor), comp_cn + G_us - (P.intrinsic_gap + gapShock));
         const lag = (logA_us - logA_cn) / rate;
         const front = Math.max(logA_us, logA_cn);
         const open_us = logA_us - Math.max(P.open_gap_us + openShock, 0);
@@ -410,6 +412,7 @@
           rec.imports = imports; rec.remote = remote; rec.dom_share = dom_share; rec.util_ratio = util_ratio;
           rec.bind_hbm = bind_hbm; rec.C_us = C_us; rec.C_cn = C_cn; rec.ratio_stock = C_us / Math.max(C_cn, EPS);
           rec.S_us = S_us; rec.S_cn = S_cn; rec.ratio_train = Tr_us / Math.max(Tr_cn, EPS);
+          rec.pf_us = pf_us; rec.pf_cn = pf_cn;
           rec.K_logic = K_logic; rec.K_hbm = K_hbm; rec.K_sme = K_sme; rec.K_soft = K_soft;
           rec.logA_us = logA_us; rec.logA_cn = logA_cn; rec.lag_years = lag; rec.O = O;
           rec.T = T; rec.I = I; rec.h_war = h_war; rec.h_cat = h_cat;
@@ -434,6 +437,9 @@
         C_dom = (1 - P.dep) * C_dom + dom_add;
         C_imp = (1 - P.dep) * C_imp + imports;
         B = (1 - P.dep) * B + unmet;
+        const g_need = (1 - P.ppw_share) * g_w;
+        E_us = Math.max(E_us, Math.min(E_us * Math.exp(P.g_e_us), res_us * need_us * Math.exp(g_need)));
+        E_cn = Math.max(E_cn, Math.min(E_cn * Math.exp(P.g_e_cn), res_cn * need_cn * Math.exp(g_need)));
 
         const sub = Math.pow(Math.max(y_rd, 1e-9), P.sub_beta), feasible = Math.pow(a_sme, P.eta_sme) * sub;
         const target = HEADROOM * (1 + (1 - P.util_pull) * OVERBUILD) * Dd * Math.exp(g_w);

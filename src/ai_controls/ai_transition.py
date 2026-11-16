@@ -37,7 +37,7 @@ def world_types(seed, sims, P, theta_med, U, Z):
     return theta, dec, half_life
 
 
-def capability(Tr_us, Tr_cn, Tr_us0, G_us, G_cn, P):
+def capability(Tr_us, Tr_cn, Tr_us0, G_us, G_cn, P, gap_shock=0.0):
     """Frontier capability in nats above the 2026 US level.
 
     ``alpha_T`` is the capability return to training compute; G is algorithmic progress.
@@ -48,12 +48,15 @@ def capability(Tr_us, Tr_cn, Tr_us0, G_us, G_cn, P):
     distillation, published research), and borrowed efficiency can keep a follower close
     but cannot carry it past the leader. So China's capability is its anchored value,
     held at least ``follow_floor`` behind the US, unless its intrinsic capability (US
-    algorithms less ``intrinsic_gap``, at China's own compute) is higher.
+    algorithms less the intrinsic gap, at China's own compute) is higher. The intrinsic gap
+    is a world type: ``intrinsic_gap`` plus ``gap_shock`` (spread ``intrinsic_sd``), so in
+    some worlds Chinese labs' own methods are better than US labs' and China can lead once
+    its compute is close enough.
     """
     logA_us = P.alpha_T * np.log(np.maximum(Tr_us, 1e-12) / Tr_us0) + G_us
     comp_cn = P.alpha_T * np.log(np.maximum(Tr_cn, 1e-12) / Tr_us0)
     anchored = np.minimum(comp_cn + G_cn, logA_us - P.follow_floor)
-    intrinsic = comp_cn + G_us - P.intrinsic_gap
+    intrinsic = comp_cn + G_us - (P.intrinsic_gap + gap_shock)
     return logA_us, np.maximum(anchored, intrinsic)
 
 

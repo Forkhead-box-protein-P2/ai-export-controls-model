@@ -23,6 +23,9 @@ scenarios:
   us_power_binds:
     label: US datacentre power is the binding constraint
     overrides: {g_e_us: 0.15, pow_slack_us0: 1.05}
+  china_power_binds:
+    label: Chinese datacentre power binds and its chips are power-hungry
+    overrides: {pow_cn_us0: 0.2, g_e_cn: 0.2, ppw_gamma: 1.8}
   no_signalling:
     label: US controls carry no signal about AI's importance
     overrides: {sig_eta: 0.0}

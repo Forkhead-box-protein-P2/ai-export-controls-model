@@ -45,3 +45,25 @@ def test_power_cannot_create_compute_without_chips():
     huge_power = compute.power_factor(z, np.ones(1) * 1e9)
     out = compute.services(z, z, z, z, np.ones(1), huge_power, huge_power, 0.5, P)
     assert all(np.all(v == 0) for v in out)
+
+
+def test_power_build_out_is_bounded_and_never_shrinks():
+    E, need = np.array([100.0, 100.0, 100.0]), np.array([50.0, 90.0, 400.0])
+    new = compute.build_power(E, need, 0.2, 0.3, 1.2)
+    assert np.all(new >= E)                                   # power is never torn down
+    assert np.isclose(new[0], E[0])                           # spare power: nothing is built
+    assert np.isclose(new[1], 1.2 * 90 * np.exp(0.2))         # builds to the reserve when it can
+    assert np.isclose(new[2], E[2] * np.exp(0.3))             # otherwise as fast as it can
+
+
+def test_less_efficient_chips_cost_china_power_when_it_is_scarce(root):
+    """China's power is set against the US's in physical terms, so a higher performance-per-watt
+    penalty means less usable Chinese hardware instead of cancelling out."""
+    from ai_controls import analysis as A
+    from ai_controls.parameters import load_config
+    cfg = load_config(root / "configs" / "stress_tests.yaml")
+    tight = cfg.with_overrides(cfg.scenarios["china_power_binds"]["overrides"])
+    pf = {g: A.run_config(tight.with_overrides({"ppw_gamma": g}), 200, 3, policies=["maintain"])
+          .results["maintain"].series["pf_cn"] for g in (1.0, 1.8)}
+    assert pf[1.8].mean() < pf[1.0].mean() < 1.0
+    assert np.isclose(pf[1.0][0].mean(), 1.0) or pf[1.8][0].mean() < pf[1.0][0].mean()

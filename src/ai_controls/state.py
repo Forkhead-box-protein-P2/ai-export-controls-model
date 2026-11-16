@@ -10,7 +10,7 @@ R_WEIGHTS = (0.40, 0.15, 0.30, 0.15)
 # Random streams. Parameter draws use 1000 + parameter index; factor draws 900 + k.
 STREAMS = {
     "no_threshold": 1, "theta": 2, "dec_mix": 3, "dec_val": 4, "persist": 5,
-    "adverse": 6, "tw": 7, "war_type": 8, "war_escal": 9, "open_shock": 10, "dist": 11,
+    "adverse": 6, "tw": 7, "war_type": 8, "war_escal": 9, "open_shock": 10, "dist": 11, "intrinsic": 12,
     "alg_common": 20, "alg_cn": 21, "war": 22, "cat": 23, "war_ar": 24, "obs": 25,
 }
 STREAM_FACTOR0 = 900
@@ -22,7 +22,7 @@ SERIES = (
     "m", "y_rd", "y_ret", "h", "b_cn",
     "W", "D", "pref", "acc", "Q_dom", "dom_add", "imports", "remote",
     "dom_share", "util_ratio", "bind_hbm",
-    "C_us", "C_cn", "ratio_stock", "S_us", "S_cn", "ratio_train",
+    "C_us", "C_cn", "ratio_stock", "S_us", "S_cn", "ratio_train", "pf_us", "pf_cn",
     "K_logic", "K_hbm", "K_sme", "K_soft",
     "logA_us", "logA_cn", "lag_years", "O",
     "T", "I", "h_war", "h_cat", "adv_us", "adv_cn",

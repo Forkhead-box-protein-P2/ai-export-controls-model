@@ -6,7 +6,7 @@
 <meta name="description" content="An interactive stochastic game model of US export controls on AI chips, HBM and chipmaking equipment to China: China's responses, compute, AI transition, conflict risk and payoffs.">
 <meta name="theme-color" content="#fafaf8">
 <title>Export Controls Engine</title>
-<link rel="stylesheet" href="web/style.css?v=4">
+<link rel="stylesheet" href="web/style.css?v=5">
 <script>
 window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' } };
 </script>
@@ -146,9 +146,9 @@ window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\
     <div class="eq">\[ K_{t+1}=(1-\delta)K_t+r\,\rho(y_t)\,\tau_t\,(1-K_t)+\lambda\Big[\ln\!\big(1+\tfrac{E_{t+1}}{\bar E}\big)-\ln\!\big(1+\tfrac{E_t}{\bar E}\big)\Big]+\kappa\,(1-x^{\text{eff}}_t)(1-K_t). \]</div>
     <p>With no new experience, no R&amp;D and no spillovers, know-how cannot grow, because the same historical deployments are never counted twice. Software learning comes from operating time on domestic chips, weighted by how many leading buyers actually use them. That is the captive-market channel. Output is a separate quantity. It is the minimum of the logic, HBM and packaging bottlenecks in chip equivalents, times final yield, times per-chip performance \(e^{-\gamma(1-K_{\text{logic}})}\). SME controls slow capacity expansion and HBM controls cap the memory supply, so controls can speed know-how while cutting output.</p>
     <h3>Compute is not capability</h3>
-    <p>Installed hardware is depreciated each year. Power caps how much of it can run, so more electricity cannot help without chips. Rented foreign cloud capacity adds services in the year it is rented and never enters China's hardware stock. Capability, in natural-log units above the 2026 US frontier, is</p>
+    <p>Installed hardware is depreciated each year. Power caps how much of it can run, so more electricity cannot help without chips. Power is measured in what a 2026 Western chip could run, and China's is set against the US's in physical terms, so a less efficient Chinese chip needs more of a fixed supply. Each country builds power toward what its hardware needs, keeping its 2026 spare capacity, no faster than a maximum rate. Rented foreign cloud capacity adds services in the year it is rented and never enters China's hardware stock. Capability, in natural-log units above the 2026 US frontier, is</p>
     <div class="eq">\[ \ln A^{US}_t=\alpha\ln\frac{T^{US}_t}{T^{US}_0}+G^{US}_t,\qquad \ln A^{CN}_t=\max\!\Big(\min\big(\alpha\ln\tfrac{T^{CN}_t}{T^{US}_0}+G^{CN}_t,\;\ln A^{US}_t-\phi\big),\;\alpha\ln\tfrac{T^{CN}_t}{T^{US}_0}+G^{US}_t-\gamma\Big). \]</div>
-    <p>A 10× training-compute ratio maps to a capability gap of only \(\alpha\ln 10\), measured in years of frontier progress. China's 2026 algorithmic index reproduces the observed lag of about seven months, and diffusion keeps it near that steady state. Borrowed efficiency (imitation, distillation, published research) can keep a follower close to the leader but cannot carry it past. China leads only if its own compute overcomes the intrinsic gap \(\gamma\).</p>
+    <p>A 10× training-compute ratio maps to a capability gap of only \(\alpha\ln 10\), measured in years of frontier progress. China's 2026 algorithmic index reproduces the observed lag of about seven months, and diffusion keeps it near that steady state. Borrowed efficiency (imitation, distillation, published research) can keep a follower close to the leader but cannot carry it past. China leads only if its own compute overcomes the intrinsic gap \(\gamma\), which is a world type: it varies across worlds around its median, so in some worlds Chinese labs' own methods are better.</p>
     <h3>Arrival, decisiveness and durability are separate draws</h3>
     <p>A transition arrives when frontier capability crosses an uncertain threshold \(\theta\). Its median is solved so that P(transformative AI by 2035 under Maintain) equals the worldview's stated value, and some worlds have no threshold at all. Decisiveness \(d\in[0,1]\) is a world type drawn from a two-regime mixture. The leader's durable capture share and its advantage after arrival are</p>
     <div class="eq">\[ k=d\,\big(1-e^{-\ell/c}\big)\,(1-\omega O),\qquad a_t=k\cdot 2^{-(t-t^*)/H}. \]</div>
@@ -188,8 +188,8 @@ pytest</pre>
 </main>
 <footer class="footer"><div class="wrap">AI export controls game model · an interactive, illustrative decision model. Parameters are editable and mostly illustrative; nothing here is a forecast.</div></footer>
 <div id="tip" role="tooltip"></div>
-<script src="web/params.js?v=4"></script>
-<script src="web/model.js?v=4"></script>
-<script src="web/app.js?v=4"></script>
+<script src="web/params.js?v=5"></script>
+<script src="web/model.js?v=5"></script>
+<script src="web/app.js?v=6"></script>
 </body>
 </html>

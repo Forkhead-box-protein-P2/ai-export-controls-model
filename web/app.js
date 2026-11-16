@@ -9,7 +9,7 @@
   // Only the series the page draws are recorded, which halves the run time.
   const SITE_SERIES = ['x_chips', 'x_hbm', 'x_sme', 'x_cloud', 'x_enf', 'm', 'y_rd', 'y_ret', 'h', 'b_cn', 'dom_share', 'Q_dom', 'W', 'imports',
     'K_soft', 'K_logic', 'K_sme', 'ratio_stock', 'ratio_train', 'lag_years', 'O', 'h_war', 'h_cat', 'adv_us', 'adv_cn', 'war_T', 'war_sdi', 'war_det', 'war_I',
-    'cat_raw', 'cat_cn', 'cat_noslack', 'cat_norace', 'cat_nonat', 'cat_noopen'];
+    'cat_raw', 'cat_cn', 'cat_noslack', 'cat_norace', 'cat_nonat', 'cat_noopen', 'pf_us', 'pf_cn'];
   const GROUPS = Object.keys(D.groups);
   const GC = Object.fromEntries(GROUPS.map((g, k) => [g, `var(--c${k + 1})`]));
   const CONFIGS = ['baseline', 'fox_continuous', 'erich_decisive', 'agnostic_wide'];
@@ -179,9 +179,9 @@
         'Know-how grows with R&D, with learning from new production and operating experience, and with spillovers from foreign tools. Software-stack learning depends on leading buyers actually running on domestic chips. Output is a separate quantity: the minimum of the logic, HBM and packaging bottlenecks. SME controls slow capacity expansion and HBM controls cap memory, so controls can speed know-how while cutting output.'],
       eqn: '\\(s_t=\\sigma\\big(a_0+b_m m_t(1-\\varepsilon\\,\\text{acc}_t)+e_h h_t-d_q\\ln\\tfrac{q^{\\text{imp}}}{q^{\\text{dom}}}\\big)\\)' },
     cap: { step: '4', title: 'Compute and capability', sub: 'Hardware stocks, training compute and the capability lead',
-      params: ['ratio0', 'alpha_T', 'g_w0', 'g_w_inf', 'diff_rate', 'follow_floor', 'intrinsic_gap', 'g_e_us', 'cn_spill'],
-      why: ['Western accelerator output grows fast and then slows; the US installs most of it. China’s stock is imports plus domestic chips, depreciated. Power caps how much hardware can run, so more electricity cannot help without chips. Rented foreign cloud adds services in the year it is rented and never becomes Chinese hardware.',
-        'A compute ratio maps into a capability gap only through α, the return to training compute. China’s 2026 algorithmic efficiency reproduces the observed lag of about seven months. Borrowed efficiency keeps a follower close but cannot carry it past the leader.'],
+      params: ['ratio0', 'alpha_T', 'g_w0', 'g_w_inf', 'diff_rate', 'follow_floor', 'intrinsic_gap', 'intrinsic_sd', 'g_e_us', 'pow_cn_us0', 'g_e_cn', 'ppw_gamma', 'cn_spill'],
+      why: ['Western accelerator output grows fast and then slows; the US installs most of it. China’s stock is imports plus domestic chips, depreciated. Power caps how much hardware can run, so more electricity cannot help without chips. Each country builds datacentre power toward what its hardware needs, keeping the spare capacity it had in 2026, no faster than a maximum rate. US build-out is tight in the late 2020s; China starts with about three times the power its chips need, measured against the US in gigawatts, so its less efficient chips cost it power only if that spare capacity runs out. Rented foreign cloud adds services in the year it is rented and never becomes Chinese hardware.',
+        'A compute ratio maps into a capability gap only through α, the return to training compute. China’s 2026 algorithmic efficiency reproduces the observed lag of about seven months. Borrowed efficiency keeps a follower close but cannot carry it past the leader. How good Chinese labs’ own methods are varies across worlds, so in a few worlds China leads once its compute is close enough.'],
       eqn: '\\(\\ln A^{US}_t=\\alpha\\ln\\tfrac{T^{US}_t}{T^{US}_0}+G^{US}_t,\\quad \\text{lead}_t=\\dfrac{\\ln A^{US}_t-\\ln A^{CN}_t}{\\alpha g_W+g_{\\text{alg}}}\\)' },
     arr: { step: '5', title: 'Transformative AI?', sub: 'Arrival when the frontier crosses an uncertain threshold',
       params: ['p_tai_2035', 'p_no_threshold', 'theta_sigma'],
@@ -514,6 +514,8 @@
     { k: 'ratio_stock', t: 'US:China installed capacity', d: 'Ratio of AI hardware stocks (log scale)', log: true, fmt: fr, guide: true },
     { k: 'ratio_train', t: 'US:China training compute', d: 'Usable training compute, incl. rented cloud (log)', log: true, fmt: fr },
     { k: 'lag_years', t: 'US capability lead', d: 'Years of frontier progress; below zero, China leads', fmt: v => v.toFixed(2) + ' yr' },
+    { k: 'pf_us', t: 'US hardware that power can run', d: 'Below 100%, chips wait for datacentre power', fmt: v => pc(v), domain: [0, 1] },
+    { k: 'pf_cn', t: 'Chinese hardware that power can run', d: 'Below 100%, inefficient chips run out of power', fmt: v => pc(v), domain: [0, 1] },
     { k: 'O', t: 'Open-model competitive pressure', d: '1 = an open model at the frontier', fmt: f2 },
     { k: 'dom_share', t: 'Domestic adoption', d: 'Domestic share of new Chinese AI hardware', fmt: v => pc(v) },
     { k: 'K_soft', t: 'Know-how: software stack', d: 'Learns from operating time on domestic chips', fmt: f2 },
@@ -533,6 +535,7 @@
     const tr = spec.log ? v => Math.log10(Math.max(v, 1e-9)) : v => v;
     if (spec.log) { lo = Math.max(lo, hi / 1e5, 1e-6); }
     let tlo = tr(lo), thi = tr(hi); if (thi - tlo < 1e-9) { thi += 0.5; tlo -= 0.5; }
+    if (spec.domain) { tlo = spec.domain[0]; thi = spec.domain[1]; }
     const padv = (thi - tlo) * 0.06; tlo -= padv; thi += padv;
     const sx = i => L + i / (years.length - 1) * (W - L - R);
     const sy = v => Math.max(T, Math.min(H - B, T + (thi - tr(v)) / (thi - tlo) * (H - T - B)));

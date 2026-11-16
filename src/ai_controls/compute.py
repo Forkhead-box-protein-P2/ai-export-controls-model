@@ -54,6 +54,15 @@ def power_factor(need, capacity):
     return np.minimum(1.0, capacity / np.maximum(need, EPS))
 
 
+def build_power(E, need, g_need, g_max, reserve):
+    """Datacentre power for next year. Builders aim to keep the spare capacity they had in
+    2026 (``reserve`` times next year's expected need), can add at most ``g_max`` log points
+    a year, and never tear power down. Power binds only when hardware need grows faster
+    than ``g_max`` for long enough to use up the spare capacity."""
+    target = reserve * need * np.exp(g_need)
+    return np.maximum(E, np.minimum(E * np.exp(g_max), target))
+
+
 def services(C_us, C_dom, C_imp, remote, usab, pf_us, pf_cn, scarcity_t, P):
     """Usable compute services during the year.
 

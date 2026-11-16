@@ -224,7 +224,7 @@
     $('valTable').innerHTML = `<thead><tr><th>Comparison</th><th>Values</th><th class="num">Engine</th><th class="num">Lean formula</th><th class="num">Difference</th></tr></thead><tbody>${rows.map(r => `<tr class="${r.calibration_pair ? 'ref' : ''}"><td>${esc(pairLabel(r.pair))}${r.calibration_pair ? ' <span class="muted small">(calibration)</span>' : ''}</td><td>${W_SHORT[r.weights]}</td><td class="num">${tn(r.engine_net)}</td><td class="num">${tn(r.lean_net)}</td><td class="num">${(100 * r.rel_error).toFixed(0)}%</td></tr>`).join('')}</tbody>`;
   }
   const s = L.summary;
-  $('valSummary').textContent = `median error ${(100 * s.median_abs_rel_error).toFixed(0)}% across ${s.cells} out-of-sample cells, ${(100 * s.share_within_20pct).toFixed(0)}% of them within 20%, and the sign agrees in ${(100 * s.share_sign_agrees).toFixed(0)}%. The misses are concentrated in the wide-uncertainty worldview and in Tighten vs Maintain, where the engine's value of a lead is non-linear in its length.`;
+  $('valSummary').textContent = `median error ${(100 * s.median_abs_rel_error).toFixed(0)}% across ${s.cells} out-of-sample cells, ${(100 * s.share_within_20pct).toFixed(0)}% of them within 20%, and the sign agrees in ${(100 * s.share_sign_agrees).toFixed(0)}%. The misses are concentrated in Broad relaxation, where easing every control also lowers tension and the race part of catastrophe risk, and in Tighten vs Maintain, where the engine's value of a lead is non-linear in its length.`;
 
   [$('heat'), $('arrChart')].forEach(tipHost);
   loadDefaults(); renderControls(); buildSliders(); fillHeatSelects(); render();

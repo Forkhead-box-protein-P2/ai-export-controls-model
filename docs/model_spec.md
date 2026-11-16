@@ -96,9 +96,14 @@ Within each year:
    - Domestic additions are min(domestic demand, Q).
    - A domestic shortfall is partly back-filled by accessible imports.
    - Unmet need accumulates in a backlog that rented cloud can partly serve.
-7. **Power and services.** The usable fraction of each stock is min(1, power available / power needed), and power needed falls with performance per watt. US services lose the share of rented capacity that would otherwise serve US users. China's training compute counts rented compute at a discount. Rentals never enter China's stock.
+7. **Power and services.** The usable fraction of each stock is min(1, power available / power needed).
+   - Power is measured in what a 2026 Western chip could run. Need falls with Western performance per watt, and a Chinese chip needs \(e^{\gamma_w(1-K_{logic})}\) times as much (`ppw_gamma`, anchored to Huawei's CloudMatrix 384).
+   - US power in 2026 is `pow_slack_us0` times US need. China's is `pow_cn_us0` times the US's, a physical ratio, so a higher `ppw_gamma` leaves China less spare power instead of cancelling out.
+   - Each year each country builds toward its 2026 ratio of power to expected need, adding at most `g_e_us` or `g_e_cn` log points and never removing power. Power binds only when need outgrows the build rate for long enough to use up the spare capacity.
+   - US services lose the share of rented capacity that would otherwise serve US users. China's training compute counts rented compute at a discount. Rentals never enter China's stock.
 8. **Capability.** \(\ln A^{US}=\alpha \ln(T^{US}/T^{US}_0)+G^{US}\). China's capability is \(\max(\min(\alpha\ln(T^{CN}/T^{US}_0)+G^{CN},\ \ln A^{US}-\phi),\ \alpha\ln(T^{CN}/T^{US}_0)+G^{US}-\gamma)\).
    - \(G^{CN}_{2026}\) reproduces the observed lag `lag0`.
+   - The intrinsic gap \(\gamma\) is a world type, `intrinsic_gap` plus a normal shock with spread `intrinsic_sd`, held fixed across policies. Where Chinese labs' own methods are better than US labs', China leads once its compute is close enough.
    - Diffusion pulls the algorithmic gap toward the level at which the 2026 gap is a steady state at the 2026 compute ratio.
    - China's own algorithmic progress scales with its relative compute to the power `theta_exp`.
    - Chinese research spills into the frontier in proportion to China's relative compute and openness.

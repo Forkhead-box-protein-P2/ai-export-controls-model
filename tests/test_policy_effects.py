@@ -81,3 +81,16 @@ def test_inherited_2026_state_is_policy_independent(base_run):
     for res in base_run.results.values():
         for name in ("x_chips", "x_sme", "C_cn", "K_logic", "dom_share", "h"):
             assert np.allclose(res.series[name][0], ref[name][0])
+
+
+def test_china_can_lead_in_central_worlds(base_cfg):
+    """The intrinsic gap is a world type, so even central parameters leave some worlds in
+    which China's own methods and enough compute put it ahead. With no spread, a 10x
+    compute deficit and the follower floor keep China behind in every world."""
+    pols = ["maintain", "broad_relax"]
+    wide = A.run_config(base_cfg, 400, 3, policies=pols)
+    none = A.run_config(base_cfg.with_overrides({"intrinsic_sd": 0.0}), 400, 3, policies=pols)
+    ahead = lambda run, p: float((run.results[p].series["lag_years"] < 0).any(axis=0).mean())
+    assert ahead(wide, "broad_relax") > 0
+    assert ahead(wide, "broad_relax") >= ahead(wide, "maintain")
+    assert ahead(none, "maintain") == 0

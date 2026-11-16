@@ -6,7 +6,7 @@
 <meta name="description" content="A lean, 15-number model of whether US AI export controls pay: the lead they buy, when transformative AI arrives, what a lead is worth, and what controls cost.">
 <meta name="theme-color" content="#fafaf8">
 <title>Do Export Controls Pay?</title>
-<link rel="stylesheet" href="web/style.css?v=4">
+<link rel="stylesheet" href="web/style.css?v=5">
 </head>
 <body>
 <header class="top"><div class="wrap top-inner">
@@ -80,6 +80,7 @@
       <li><strong>Signalling, tension and interdependence as states.</strong> These appear only through the single war-risk change.</li>
       <li><strong>Industrial detail.</strong> HBM, packaging, yields, equipment and power are collapsed into the compute multiple and its half-life. About sixty engine parameters reduce to "how many months of lead do controls buy, and how fast does it fade".</li>
       <li><strong>Outcome regimes and war types.</strong> Distributed or near-simultaneous arrival, durable versus dissipating leads, and denial versus capture wars are averaged into the value scalars.</li>
+      <li><strong>Catastrophe risk that moves with tension.</strong> In the engine, a close race is more dangerous when tension is high, and controls raise tension. Easing every control lowers it, so the engine credits Broad relaxation with some safety that the lean safety term, which sees only the lead, misses.</li>
     </ul>
     <p>How much this loses is measured, not assumed. With value scalars calibrated on Maintain vs Relax chips only, the lean formula reproduces the engine's other policy comparisons as follows: <span id="valSummary"></span> Details are in the next section.</p>
   </div>
@@ -91,20 +92,22 @@
   <h3 style="margin:26px 0 6px">Does the lean formula reproduce the engine?</h3>
   <p class="small muted" style="max-width:860px">Net advantage of controls, $tn present value, for the selected worldview. The yearly-cost and war terms are read from the engine for each comparison, so they match by construction. The test is whether the lead and safety terms, with the value of a month of lead and the risk cut per month calibrated on Maintain vs Relax chips only, carry over to the other comparisons and value sets.</p>
   <div class="table-wrap"><table id="valTable"></table></div>
-  <h3 style="margin:26px 0 6px">Known issues in the engine</h3>
+  <h3 style="margin:26px 0 6px">Engine checks</h3>
+  <p class="small muted" style="max-width:860px">A sweep of every ranged engine input found the problems below. Each has been fixed or traced to a sourced assumption.</p>
   <div class="prose"><ul>
-    <li><strong>Chinese power never binds.</strong> Chinese datacentre power is defined as a multiple of China's 2026 need, so the performance-per-watt penalty cancels. The argument that cheap power can substitute for worse chips cannot show up.</li>
-    <li><strong>US datacentre power growth is a big lever.</strong> In the decisive worldview it is among the largest levers, although neither side argued about it.</li>
-    <li><strong>China never leads.</strong> In the three main worldviews China never leads, so terms that need a Chinese lead are close to inactive: a China-led adverse order, US exposure to coercion, and Chinese capture of US surplus. The catastrophe hazard was redesigned per developer so that a trailing Chinese lab still counts.</li>
-    <li><strong>Large but unsourced levers:</strong> the closest a follower can get on borrowed efficiency, spillovers from Chinese research, the openness effect on catastrophe risk, and the race multiplier. Treat them as cruxes.</li>
-  </ul><p class="small muted">From a parameter sweep of every ranged engine input (low and high, three worldviews, two comparisons, two value sets).</p></div>
+    <li><strong>Power is measured in physical terms.</strong> China's datacentre power is set against the US's in gigawatts, not as a multiple of its own 2026 need, so less efficient Chinese chips need more of a fixed supply. Huawei's CloudMatrix 384 uses about 2.5 times the power per FLOP of Nvidia's NVL72. Each country builds power toward what its hardware needs, keeping its 2026 spare capacity, no faster than a maximum rate. China starts with about three times the power its chips need, so in the main worldviews it never runs short, as SemiAnalysis argues. Chip efficiency then matters only if that spare capacity is smaller; the stress test where Chinese power binds shows it.</li>
+    <li><strong>US power is a real crux.</strong> US build-out is tight from 2027 to about 2031: the hardware that power can run falls to about 70%. While US power binds, chips sold to China cost the US no usable compute, which weakens the case for controls. That is why US power growth is among the largest levers in the decisive worldview. Its range now rests on the LBNL datacentre electricity projections, plus a faster AI share and allied sites.</li>
+    <li><strong>China can lead.</strong> How good Chinese labs' own methods are now varies across worlds. China leads at arrival in about 1% of worlds in the continuous worldview, under 1% in the decisive one and 3 to 5% under wide uncertainty, and more often when controls are eased. Terms that need a Chinese lead are live but small, because a Chinese lead needs both better methods and a narrow compute gap.</li>
+    <li><strong>Large levers now carry sources, but remain judgements.</strong> The follower floor is anchored to Epoch's smallest observed lag of four months. Chinese research spillover is scaled against the AI Index's count of notable models. The race multiplier rests on game-theoretic work with no empirical size. The openness effect on catastrophe risk sits at zero between two opposing reviews. Treat all four as cruxes.</li>
+    <li><strong>No dead parameters.</strong> The first sweep never ran Tighten or Adaptive, so parameters that act only there looked dead. Across all comparisons, only the near-simultaneous window has no effect, by design: it only labels outcomes. A few others matter only in one branch (a capture war, a Chinese lead, scarce Chinese power, a packaging bottleneck), and their definitions say so.</li>
+  </ul><p class="small muted">Sweep: every ranged input at its low and high bound, two worldviews, four comparisons (Maintain against Relax chips and Broad relaxation; Tighten and Adaptive against Maintain), two value sets.</p></div>
 </section>
 </div>
 </main>
 <footer class="footer"><div class="wrap">Do export controls pay? · a lean, editable decision model with a <a href="engine.html">full engine</a> behind it. Nothing here is a forecast.</div></footer>
 <div id="tip" role="tooltip"></div>
-<script src="web/lean_params.js?v=4"></script>
-<script src="web/lean.js?v=4"></script>
-<script src="web/lean_app.js?v=4"></script>
+<script src="web/lean_params.js?v=5"></script>
+<script src="web/lean.js?v=5"></script>
+<script src="web/lean_app.js?v=5"></script>
 </body>
 </html>

@@ -18,7 +18,8 @@ Most parameters are illustrative. The estimated ones cover:
 - the observed capability lag;
 - domestic market shares;
 - depreciation;
-- datacentre power slack;
+- datacentre power: China's against the US's, US build-out growth, and Chinese chips' power per FLOP;
+- the closest observed Chinese lag (the follower floor);
 - smuggling leakage;
 - GDP;
 - war costs.
@@ -67,6 +68,11 @@ All of these are research leads mapped onto parameters. Several are secondary re
 | covington_h200 | Covington on the BIS licence-review rule | 2026-01 | status of H200-class licensing |
 | trendforce_sme, trendforce_duv, cxmt_hbm | TrendForce; Korea JoongAng Daily | 2026 | domestic equipment push, DUV testing, CXMT HBM3E |
 | openrouter_soai | OpenRouter, *State of AI* | 2025 | Chinese open-model token share |
+| semianalysis_cm384 | SemiAnalysis, *Huawei AI CloudMatrix 384* | 2025-04-16 | 2.5× worse power per FLOP than Nvidia's NVL72 (`ppw_gamma`); China limited by silicon, not power |
+| lbnl_dc_2024 | LBNL *2024 US Data Center Energy Usage Report*, via DOE | 2024-12-20 | US datacentre electricity growth to 2028 (`g_e_us`) |
+| ai_index_2025 | Stanford HAI, *2025 AI Index*, R&D chapter | 2025-04 | notable models by country, for the scale of `cn_spill` |
+| armstrong_race | Armstrong, Bostrom and Shulman, *AI & Society* | 2016 | theory behind `race_risk`; no empirical size |
+| kapoor_open, seger_open | Kapoor, Bommasani et al.; Seger et al. (GovAI) | 2024; 2023 | opposing views behind `open_risk`; central value zero |
 
 The full URLs are in `configs/baseline.yaml` and on the site.
 
@@ -76,7 +82,8 @@ The full URLs are in `configs/baseline.yaml` and on the site.
 - **Nvidia's 2026 China share.** IDC reports 34% of H1 2026 units. Other analysts forecast single digits.
 - **Huawei's 2026 output.** Estimates differ between unit counts and H100-equivalents. HBM is the binding constraint in most accounts.
 - **SMIC advanced-node capacity and yields.** Reports differ by a factor of three or more.
-- **Chinese model lag.** Estimates run from 4 to 7 months depending on the benchmark, and an Arena-score gap is a different metric again.
+- **Chinese model lag.** Estimates run from 4 to 7 months depending on the benchmark, and an Arena-score gap is a different metric again. On Epoch's index the gap since 2023 has ranged from 4 to 14 months, averaging 7.
+- **Whether power binds.** SemiAnalysis argues China has no power constraint and is limited by silicon. US datacentre build-out is widely reported as power-limited in the late 2020s. Published estimates of China's datacentre capacity differ widely.
 - **Taiwan conflict probabilities.** Forecasting-platform snapshots vary widely. The baseline war target is an illustrative input, not a measured probability.
 - **Points not confirmed against primary documents.** The October 2022 and October 2023 rule dates and the 2025 H20 timeline came from search summaries and were not re-verified.
 

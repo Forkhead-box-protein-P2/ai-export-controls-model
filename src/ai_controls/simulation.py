@@ -75,6 +75,7 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
     u_adv, u_wtype, u_esc, u_dist = U("adverse"), U("war_type"), U("war_escal"), U("dist")
     tw_shock = P.th_tw_sd * Z("tw")
     open_shock = P.open_sigma * Z("open_shock")
+    gap_shock = P.intrinsic_sd * Z("intrinsic")
 
     # Initial state (start of 2026).
     C_us = P.c_us0.copy()
@@ -98,9 +99,11 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
     T, I = P.T0.copy(), P.I0.copy()
     cumW = zeros()
     tai_us, tai_cn, tai_row = zeros(), zeros(), zeros()
-    ppw_rel0 = np.exp(-P.ppw_gamma * (1.0 - K_logic))
-    E_us0 = P.pow_slack_us0 * C_us
-    E_cn0 = P.pow_slack_cn0 * (C_imp + C_dom / ppw_rel0)
+    # Datacentre power, in compute units a 2026 Western chip could run. China's is set
+    # relative to the US's physical capacity, so a less efficient Chinese chip needs more
+    # of a fixed supply rather than coming with more power of its own.
+    E_us = P.pow_slack_us0 * C_us
+    E_cn = P.pow_cn_us0 * E_us
 
     arrived, near_sim, distributed = false(), false(), false()
     t_arr = np.full(n, NEVER)
@@ -167,8 +170,10 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
         remote = P.cloud_suit * B * (1.0 - xcl)
         ppw_idx = np.exp(P.ppw_share * cumW)
         ppw_rel = np.exp(-P.ppw_gamma * (1.0 - K_logic))
-        pf_us = compute.power_factor(C_us / ppw_idx, E_us0 * np.exp(P.g_e_us * t))
-        pf_cn = compute.power_factor((C_imp + C_dom / ppw_rel) / ppw_idx, E_cn0 * np.exp(P.g_e_cn * t))
+        need_us, need_cn = C_us / ppw_idx, (C_imp + C_dom / ppw_rel) / ppw_idx
+        if t == 0:
+            res_us, res_cn = E_us / need_us, E_cn / need_cn
+        pf_us, pf_cn = compute.power_factor(need_us, E_us), compute.power_factor(need_cn, E_cn)
         S_us, S_cn, Tr_us, Tr_cn = compute.services(C_us, C_dom, C_imp, remote, usab, pf_us, pf_cn,
                                                     scarcity_t, P)
         if lead_path is not None:
@@ -182,7 +187,7 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
         rate = P.alpha_T * g_w + P.g_alg
         if t == 0:
             G_cn = -(P.lag0 * rate + P.alpha_T * np.log(Tr_cn / Tr_us))
-        logA_us, logA_cn = ai_transition.capability(Tr_us, Tr_cn, Tr_us0, G_us, G_cn, P)
+        logA_us, logA_cn = ai_transition.capability(Tr_us, Tr_cn, Tr_us0, G_us, G_cn, P, gap_shock)
         lag_years = (logA_us - logA_cn) / rate
         front, open_front, open_cn, O = ai_transition.openness(logA_us, logA_cn, T, b_cn, open_shock, P)
         avail = {"us": np.maximum(logA_us, open_front), "cn": np.maximum(logA_cn, open_front),
@@ -276,6 +281,7 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
                 "util_ratio": util_ratio, "bind_hbm": ind["bind_hbm"],
                 "C_us": C_us, "C_cn": C_dom + C_imp, "ratio_stock": C_us / np.maximum(C_dom + C_imp, EPS),
                 "S_us": S_us, "S_cn": S_cn, "ratio_train": ratio_train_path[t],
+                "pf_us": pf_us, "pf_cn": pf_cn,
                 "K_logic": K_logic, "K_hbm": K_hbm, "K_sme": K_sme, "K_soft": K_soft,
                 "logA_us": logA_us, "logA_cn": logA_cn, "lag_years": lag_years, "O": O,
                 "T": T, "I": I, "h_war": h_war, "h_cat": h_cat,
@@ -300,6 +306,9 @@ def simulate(cfg: Config, p: dict, policy: dict, n: int, seed: int, calib: Calib
         C_dom = (1.0 - P.dep) * C_dom + dom_add
         C_imp = (1.0 - P.dep) * C_imp + imports
         B = (1.0 - P.dep) * B + unmet
+        g_need = (1.0 - P.ppw_share) * g_w
+        E_us = compute.build_power(E_us, need_us, g_need, P.g_e_us, res_us)
+        E_cn = compute.build_power(E_cn, need_cn, g_need, P.g_e_cn, res_cn)
 
         L_new, H_new, Pk = industry.expand(L, H, Pk, a_sme, y_rd, Dd, Q_dom, ind["logic_out"],
                                            ind["hbm_dom"], g_w, P)
