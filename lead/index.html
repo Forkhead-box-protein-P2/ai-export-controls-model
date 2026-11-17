@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A four-step decision model of US AI export controls: the compute gap they hold, the months of lead that buys, what those months change, and the price at which controls break even.">
+<title>What is a month of AI lead worth?</title>
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<header class="top"><div class="wrap top-inner">
+  <a class="brand" href="#top">Months of lead</a>
+  <nav aria-label="Sections">
+    <a href="#tree">Tree</a><a href="#s1">Compute</a><a href="#s2">Lead</a><a href="#s3">Outcomes</a><a href="#s4">Value</a><a href="#cruxes">Cruxes</a><a href="#assumptions">Assumptions</a>
+  </nav>
+  <button class="ghost" id="themeBtn" type="button">Theme</button>
+</div></header>
+
+<main id="top">
+<section class="wrap hero">
+  <div class="eyebrow">AI export controls · a decision model in four steps</div>
+  <h1>What is a month of AI lead worth?</h1>
+  <p class="lede">US controls on AI chips, chipmaking tools and memory keep China's stock of compute far below America's. Published estimates turn that gap into a few extra months of US lead at the AI frontier. Whether those months justify what the controls cost depends on what a month of lead changes. This page follows one policy comparison through four steps and reports the price at which the two policies tie.</p>
+  <p class="small muted">Every input is sourced, fitted to a published figure, or a labelled judgment with a range. Read each result as: if these numbers, then this answer.</p>
+</section>
+
+<div class="bar" id="bar"><div class="wrap bar-inner">
+  <div class="field"><span class="field-label">Beliefs</span><div class="seg" id="presetSeg" role="group" aria-label="Belief preset"></div></div>
+  <div class="field"><label class="field-label" for="selA"><span class="sw sw-a"></span>Policy A</label><select id="selA"></select></div>
+  <div class="field"><label class="field-label" for="selB"><span class="sw sw-b"></span>against B</label><select id="selB"></select></div>
+  <div class="field field-end"><button class="ghost" id="resetBtn" type="button">Reset</button><button class="ghost" id="linkBtn" type="button">Copy link</button></div>
+</div></div>
+
+<section class="wrap" id="verdict" aria-live="polite">
+  <p class="preset-blurb" id="presetBlurb"></p>
+  <div class="tiles" id="tiles"></div>
+  <p class="verdict-text" id="verdictText"></p>
+</section>
+
+<section class="wrap block" id="tree">
+  <h2>The game tree</h2>
+  <p class="prose">The US moves first. China responds by evading, substituting and reserving its own market, and that sets the compute ratio and the lead. Chance then decides whether there is ever a window in which a lead can be converted into durable dominance, who is clearly ahead when it opens, and whether control of the technology is kept. Each branch shows policy A and policy B side by side.</p>
+  <div class="scroll-x"><div id="treeHost" class="tree-host"></div></div>
+</section>
+
+<section class="wrap block stage" id="s1">
+  <div class="stage-head"><span class="stage-n">1</span><div><h2>Policy to compute</h2><p class="stage-q">How far apart do controls hold the two compute stocks?</p></div></div>
+  <div class="stage-grid">
+    <div class="stage-side">
+      <p class="prose">China wants a fixed share of what the US buys each year. Controls bar some of that, and part of what is barred leaks back through smuggling and offshore data centres. Whatever foreign chips do not serve is a captive market for Chinese chipmakers, and Beijing reserves some of the market for them regardless. One drive term then sets how fast Chinese output grows and how fast each chip catches up: the captive share, less the choke from tool and memory controls. Chip controls push that term up and tool controls push it down.</p>
+      <div class="levers"><div><h3><span class="sw sw-a"></span>Policy A</h3><div id="leversA"></div></div><div><h3><span class="sw sw-b"></span>Policy B</h3><div id="leversB"></div></div></div>
+      <div id="ctl-compute"></div>
+    </div>
+    <div class="stage-main">
+      <figure><figcaption>US:China ratio of installed AI compute <span class="muted">(log scale)</span></figcaption><div id="chRatio"></div></figure>
+      <p class="readout" id="read1"></p>
+      <div class="pair">
+        <figure><figcaption>China's yearly compute by source, A <span class="muted">(share of US purchases)</span></figcaption><div id="chMixA"></div></figure>
+        <figure><figcaption>China's yearly compute by source, B <span class="muted">(share of US purchases)</span></figcaption><div id="chMixB"></div></figure>
+      </div>
+      <div id="anchors"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block stage" id="s2">
+  <div class="stage-head"><span class="stage-n">2</span><div><h2>Compute to months of lead</h2><p class="stage-q">How many months of frontier lead is that gap worth?</p></div></div>
+  <div class="stage-grid">
+    <div class="stage-side">
+      <p class="prose">IFP estimates that each tenfold change in the compute ratio moves the US frontier lead by 5.4 months when Chinese labs can distil US models, and by 10.8 months when they cannot. The lead under each policy is today's lead moved by that rule. What controls buy is the gap between the two lines.</p>
+      <div id="ctl-lead"></div>
+    </div>
+    <div class="stage-main">
+      <figure><figcaption>US lead at the frontier <span class="muted">(months; the shaded gap is what A buys)</span></figcaption><div id="chLead"></div></figure>
+      <p class="readout" id="read2"></p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block stage" id="s3">
+  <div class="stage-head"><span class="stage-n">3</span><div><h2>Months to outcomes</h2><p class="stage-q">What do those months change, if anything is ever decided?</p></div></div>
+  <div class="stage-grid">
+    <div class="stage-side">
+      <p class="prose">Months matter only if there is a window in which a lead can be converted into something durable. The critical lead says how long a lead that takes, which makes decisiveness a matter of degree. When a window opens the leader is clearly ahead with a probability that rises with the lead, and otherwise the transition is contested. Each case carries its own chance that control of the technology is lost, and that outcome is scored the same whoever was ahead.</p>
+      <div id="ctl-outcomes"></div>
+    </div>
+    <div class="stage-main">
+      <figure><figcaption>When a decisive window would open <span class="muted">(probability by year)</span></figcaption><div id="chWindow"></div></figure>
+      <div class="pair">
+        <figure><figcaption>Who is ahead when it opens, by US lead</figcaption><div id="chRace"></div></figure>
+        <figure><figcaption>Expected outcome score, by US lead <span class="muted">(0 to 100)</span></figcaption><div id="chScore"></div></figure>
+      </div>
+      <p class="readout" id="read3"></p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block stage" id="s4">
+  <div class="stage-head"><span class="stage-n">4</span><div><h2>Outcomes to value</h2><p class="stage-q">What is that worth, and what does buying it cost?</p></div></div>
+  <div class="stage-grid">
+    <div class="stage-side">
+      <p class="prose">The stakes put a dollar value on the outcome scale. The standing terms accrue every year whether or not a window ever opens: chip sales forgone, friction with third countries, the ordinary value of being ahead, the open-model cost of holding Chinese labs back, and any change in war risk. War risk rises further in decisive worlds to the extent Beijing comes to share the belief that drives the policy.</p>
+      <div id="ctl-value"></div>
+    </div>
+    <div class="stage-main">
+      <figure><figcaption>Value of A over B, by term <span class="muted">(present value)</span></figcaption><div id="chValue"></div></figure>
+      <p class="readout" id="read4"></p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block" id="cruxes">
+  <h2>What decides the answer</h2>
+  <div class="crux-grid">
+    <figure class="span2"><figcaption>One assumption at a time <span class="muted">(net value of A over B as each moves across its range; hollow dot at the bottom of the range, solid at the top)</span></figcaption><div id="chTornado"></div></figure>
+    <figure><figcaption>How likely and how sharp a decisive window is</figcaption><div id="chMap"></div></figure>
+    <figure><figcaption>Chip controls against tool controls <span class="muted">(policy A's levers, enforcement held)</span></figcaption><div id="chPolicy"></div></figure>
+    <div class="span2 sample" id="sampleBox"></div>
+  </div>
+</section>
+
+<section class="wrap block" id="assumptions">
+  <h2>Assumptions</h2>
+  <p class="prose">Sourced values are read from a dated publication. Anchored values are fitted so the model reproduces a published figure. Judgments have no measurement behind them; their ranges are there to be argued over. The belief presets are illustrative encodings of two styles of argument, not numbers anyone has stated.</p>
+  <div class="data-scroll"><table class="assume" id="assumeTable"></table></div>
+  <h3>Sources</h3>
+  <ol class="sources" id="sources"></ol>
+</section>
+
+<section class="wrap block" id="limits">
+  <h2>What the model leaves out</h2>
+  <ul class="prose">
+    <li><strong>China never ends up with more compute than open access would give it.</strong> Its yearly purchases are capped at its appetite. Faster indigenisation shortens the period in which controls bind and costs the US a market, but it cannot push the ratio below what selling chips would produce. If cheap domestic chips would let China out-buy its open-access appetite, the model understates the downside of controls.</li>
+    <li><strong>The compute stock turns over at a constant rate.</strong> At the default rate more than half of installed compute is under a year old, so a cut-off restores most of the gap within two years. If growth slows, old chips matter longer and a late cut-off recovers less. China may also stockpile if it expects one.</li>
+    <li><strong>The lead depends on the compute ratio alone.</strong> Algorithms, talent and how concentrated each country's compute is are held at today's levels.</li>
+    <li><strong>One window, one conversion curve.</strong> Nothing after the window is modelled, and a lead is either converted or not.</li>
+    <li><strong>China's responses are response functions, not optimised strategies.</strong> Leakage, the captive share, the mandate and Beijing's credence stand in for choices a fuller game would derive. Retaliation outside semiconductors is not included.</li>
+    <li><strong>Third-country buyers switching to Chinese suppliers</strong> appear only as a cost, not as extra demand that speeds China's industry.</li>
+    <li><strong>The range sample draws assumptions independently and uniformly.</strong> It describes the ranges, not a belief about them.</li>
+  </ul>
+</section>
+
+<section class="wrap block" id="equations">
+  <h2>The model on one page</h2>
+  <div class="eq-grid">
+    <div><h3>1 · Policy to compute</h3>
+      <p class="eq">foreign = (1 − chips) + chips · leak · (1 − enforce)</p>
+      <p class="eq">captive = max(mandate, 1 − foreign)</p>
+      <p class="eq">domestic = min(q · e, captive · appetite)</p>
+      <p class="eq">flow = domestic + min(foreign · appetite, appetite − domestic)</p>
+      <p class="eq">c′ = (1 − turnover) · c + turnover · flow &nbsp; R = 1 / c</p>
+      <p class="eq">drive = captive · (1 − choke · tools)</p>
+      <p class="eq">q′ = q · (1 + growth · drive) / (1 + usGrowth)</p>
+      <p class="eq">e′ = e + catchup · drive · (1 − e)</p>
+      <p class="small muted">c: China's compute stock over the US's. q: Chinese chip units over US unit purchases. e: Chinese chip performance over the US frontier chip.</p></div>
+    <div><h3>2 · Compute to lead</h3>
+      <p class="eq">lead = lead₀ + β · log₁₀(R / R₀)</p>
+      <h3>3 · Lead to outcomes</h3>
+      <p class="eq">P(window opens in year t) = p<sub>D</sub> · lognormal(t; median)</p>
+      <p class="eq">P(US clearly ahead) = E[ x³ / (x³ + τ³) ], x = lead + noise &gt; 0</p>
+      <p class="eq">P(China clearly ahead): the same with −x. Otherwise contested.</p>
+      <p class="eq">score = Σ P(case) · (1 − q<sub>case</sub>) · v<sub>case</sub> / 100</p></div>
+    <div><h3>4 · Value of A over B</h3>
+      <p class="eq">strategic = stakes · Σ<sub>t</sub> P(window in t) · d<sub>t</sub> · (score<sub>A</sub> − score<sub>B</sub>)</p>
+      <p class="eq">lead value = Σ<sub>t</sub> d<sub>t</sub> g<sub>t</sub> · (b<sub>lead</sub> − b<sub>open</sub>) · (lead<sub>A</sub> − lead<sub>B</sub>)</p>
+      <p class="eq">sales = Σ<sub>t</sub> d<sub>t</sub> g<sub>t</sub> · surplus · market · Δ(foreign chips bought / appetite)</p>
+      <p class="eq">third countries = −Σ<sub>t</sub> d<sub>t</sub> g<sub>t</sub> · third · Δ(enforce · chips)</p>
+      <p class="eq">war = −war cost · Δ[ denial · w₀ + denial at window · w₁ · κ · p<sub>D</sub> ]</p>
+      <p class="small muted">d: discount factor. g: growth of yearly flows. denial: mean of the chip and tool levers.</p></div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <p>Code, tests and parameter registry: <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model/tree/main/lead">lead/</a> in the repository. The exchange it grew out of is summarised in <a href="https://github.com/Forkhead-box-protein-P2/ai-export-controls-model/blob/main/docs/debate_context.md">docs/debate_context.md</a>. Earlier, larger models from the same project are at the <a href="../">repository's front page</a>.</p>
+</footer>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
